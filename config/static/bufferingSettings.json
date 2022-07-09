@@ -1,0 +1,29 @@
+{
+  "voidGreyAreas": {
+    "highway": {
+      "motorway": 15,
+      "trunk": 15,
+      "primary": 10,
+      "secondary": 8,
+      "tertiary": 8,
+      "unclassified": 4,
+      "residential": 4,
+      "motorway_link": 15,
+      "trunk_link": 15,
+      "primary_link": 10,
+      "secondary_link": 8,
+      "tertiary_link": 8,
+      "living_street": 4,
+      "service": 4,
+      "pedestrian": 1,
+      "track": 1,
+      "road": 4,
+      "footway": 1,
+      "steps": 1,
+      "path": 1,
+      "cycleway": 1,
+      "bridleway": 1,
+      "corridor": 1
+    }
+  }
+}

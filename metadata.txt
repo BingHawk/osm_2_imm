@@ -12,8 +12,8 @@ email=bing.hawk@telia.com
 
 about=OSM to IMM loads data from OSM, filters and parses it into layers suitable for Integrated modification methodology (IMM) analysis
 
-tracker=http://bugs
-repository=http://repo
+tracker=https://github.com/BingHawk/osm_2_imm/issues 
+repository=https://github.com/BingHawk/osm_2_imm
 # End of mandatory metadata
 
 # Recommended items:
@@ -25,7 +25,7 @@ hasProcessingProvider=no
 # Tags are comma separated with spaces allowed
 tags=osm,openstreetmap,layers, python, imm,builtenvironment,analysis
 
-homepage=http://homepage
+homepage=https://github.com/BingHawk/osm_2_imm
 category=Plugins
 icon=icon.png
 # experimental flag

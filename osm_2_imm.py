@@ -30,6 +30,7 @@ from .resources import *
 # Import the code for the dialog
 from .osm_2_imm_dialog import MainDialog
 import os.path
+from .runner import *
 
 
 class Main:
@@ -195,6 +196,8 @@ class Main:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
+            main()
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
+
