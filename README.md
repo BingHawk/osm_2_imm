@@ -1,5 +1,5 @@
 # osm_2_imm
- Repository for the osm_2_imm QGIS plugin
+ Repository for the OSM to IMM QGIS plugin
  
 # Installation of the plugin 
 As the plug-in is in pre-release, it is not available through official channels. Follow this process to install: 
