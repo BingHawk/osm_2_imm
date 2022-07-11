@@ -28,6 +28,6 @@ Locate the /bin of your qgis installation and install with pip.
 [(Instructions by Zoran)](https://landscapearchaeology.org/2018/installing-python-packages-in-qgis-3-for-windows/)
 
 # Usage notes: 
-On running the plugin, there is the choice of inputting either a feature and use that features boudning box or adding wgs84 coordinates for the boudning box manually. 
+On running the plugin, there is the choice of inputting either a feature and use that features boudning box or adding wgs84 coordinates for the boudning box manually. Right now it can work with bounding boxes up to 0.05 degrees with in longitude and latitude.  
 
 Choose the output location. After the plugin has run, you need to open the geopackage files from here manually. 
