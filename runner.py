@@ -5,6 +5,8 @@ import sys
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning) #Suppresses future warnings
 
+from qgis.core import QgsVectorLayer
+
 from .config.Config import Config
 from .query import Query
 from .parserNew import parse, buffer
@@ -19,7 +21,7 @@ CONFIG = Config()
 # gdf - the GeoGataFrame to be output
 # filename:string - the decired filename for the output file. 
 # layer - String. The name of layer the file should be output to. 
-def qWrite(gdf, filename, layer):
+def qWrite(gdf, outLoc, filename, layer):
 
     if gdf is None: 
         print('nothing to write to layer "{}" of file "{}"'.format(layer,filename))
@@ -28,11 +30,7 @@ def qWrite(gdf, filename, layer):
         if gdf.crs != CONFIG.outputCrs:
             gdf.to_crs(CONFIG.outputCrs)
 
-        currentFolder = '/Users/leonard/Desktop'
-        savefolder = currentFolder+"/"+CONFIG.outputFolder
-        if not os.path.isdir(savefolder):
-            os.mkdir(savefolder)
-        fullpath = savefolder + "/" + filename + '.gpkg'
+        fullpath = outLoc + "/" + filename + '.gpkg'
 
         if os.path.isfile(fullpath):
             print("file already exsist, edditing",fullpath)
@@ -51,7 +49,7 @@ def write(gdf, filename, layer):
             gdf.to_crs(CONFIG.outputCrs)
 
         currentFolder = os.path.abspath(os.path.dirname(sys.argv[0]))
-        savefolder = currentFolder+"/"+CONFIG.outputFolder
+        savefolder = currentFolder+"/"+"outLayers"
         if not os.path.isdir(savefolder):
             os.mkdir(savefolder)
         fullpath = savefolder + "/" + filename + '.gpkg'
@@ -74,11 +72,11 @@ def camelCaseSplit(str):
     start_idx = [0] + start_idx
     return [str[x: y] for x, y in zip(start_idx, start_idx[1:])]
      
-def main():
+def main(bbox, qProject = None, outLoc = None):
     tic = time.time()
 
     qTic = time.time()
-    res = Query.bboxGet(CONFIG.bbox_M)
+    res = Query.bboxGet(bbox)
     qToc = time.time()
     qTime = qToc - qTic
 
@@ -100,7 +98,7 @@ def main():
         if __name__ == "__main__":
             write(all[key],filename,layer)
         else: 
-            qWrite(all[key],filename,layer)
+            qWrite(all[key],outLoc,filename,layer)
 
     toc = time.time()
 

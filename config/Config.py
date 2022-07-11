@@ -28,9 +28,6 @@ class Config:
         self.projectedCrs = self.configJson["crs"]["projected"]
         self.outputCrs = self.configJson["crs"]["output"]
 
-        # Add output folder
-        self.outputFolder = self.configJson["outputFolder"]
-
         # adding the bboxs for testing on smaller area. 
         self.bbox_XXL = self.configJson['bbox']['bbox_xxlarge']
         self.bbox_XL = self.configJson['bbox']['bbox_xlarge']

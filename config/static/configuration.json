@@ -766,6 +766,5 @@
   "crs": {
     "projected": "epsg:3857",
     "output": "epsg:4326"
-  },
-  "outputFolder": "outLayers"
+  }
 }

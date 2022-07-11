@@ -23,7 +23,9 @@
 """
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtWidgets import QAction, QMessageBox
+
+from qgis.core import (QgsProject)
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -190,13 +192,34 @@ class Main:
             self.first_start = False
             self.dlg = MainDialog()
 
+        project = QgsProject.instance()
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            main()
+            if self.dlg.rb_limits.isChecked():
+                south = self.dlg.south.value()
+                west = self.dlg.west.value()
+                north = self.dlg.north.value()
+                east = self.dlg.east.value()
+
+                # TODO: input validation. 
+                bbox = south + ", " + west + ", " + north + ", " + east
+            elif self.dlg.rb_layer.isChecked():
+                layer = self.dlg.layer.currentLayer()
+                rectangle = layer.extent()
+
+                bbox = str(rectangle.yMinimum()) + ", " + str(rectangle.xMinimum()) + ", " + str(rectangle.yMaximum()) + ", " + str(rectangle.xMaximum())
+            else: 
+                QMessageBox.critical(self.iface.mainWindow(),
+                         'OSM to IMM error',
+                         "Choose a way to input bounding box\nExiting...")
+                return
+
+            outLoc = self.dlg.outputLoc.filePath()
+            main(bbox, project, outLoc)
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
