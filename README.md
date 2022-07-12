@@ -13,17 +13,21 @@ Fork this repository to the following folder.
 
 Restart QGIS, go to the plugin browser and serach for "OSM to IMM". 
 
-# Installing geopandas dependency
+# Installing dependencies
 
 Locate the /bin of your qgis installation and install with pip.
 
+Needed dependencies are: 
+- geopandas
+- overpy
+
 ## Mac OS: 
- /Applications/QGIS-LTR.app/Contents/MacOS/bin/pip3 install geopandas
+ /Applications/QGIS-LTR.app/Contents/MacOS/bin/pip3 install geopandas overpy
  
 ## Windows: 
 - Open OSGeo4W shell (packed with QGIS in the start menu)
 - Type py3_env. This should print paths of your QGIS Python installation.
-- Use Python’s pip to install the library of your choice: python -m pip install geopandas
+- Use Python’s pip to install the library of your choice: python -m pip install geopandas overpy
 
 [(Instructions by Zoran)](https://landscapearchaeology.org/2018/installing-python-packages-in-qgis-3-for-windows/)
 
