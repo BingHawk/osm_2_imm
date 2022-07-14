@@ -5,11 +5,9 @@ import sys
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning) #Suppresses future warnings
 
-from qgis.core import QgsVectorLayer
-
-from .config.Config import Config
+from ..settings.config import Config
 from .query import Query
-from .parserNew import parse, buffer
+from .parser_new import parse, buffer
 
 
 import time
@@ -72,9 +70,18 @@ def camelCaseSplit(str):
     start_idx = [0] + start_idx
     return [str[x: y] for x, y in zip(start_idx, start_idx[1:])]
      
-def main(bbox, qProject = None, outLoc = None):
-    tic = time.time()
+def main(bbox, **kwargs):
+    outLoc = None
+    test = False
+    for key in kwargs.keys():
+        if key == 'outLoc':
+            outLoc = kwargs['outLoc']
+        if key == 'test':
+            test = kwargs['test']
 
+    tic = time.time()
+    if bbox is None:
+        bbox = CONFIG.bbox_M
     qTic = time.time()
     res = Query.bboxGet(bbox)
     qToc = time.time()
@@ -95,7 +102,7 @@ def main(bbox, qProject = None, outLoc = None):
             if all[key] is not None:
                 all[key] = buffer(all[key], CONFIG.bufferSettings['voidGreyAreas'])
 
-        if __name__ == "__main__":
+        if test:
             write(all[key],filename,layer)
         else: 
             qWrite(all[key],outLoc,filename,layer)
