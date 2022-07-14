@@ -193,9 +193,10 @@ class Main:
         msgBox.setText(licenseMessage)
         readMoreBtn = msgBox.addButton(self.tr("Read more..."), QMessageBox.ActionRole)
         acceptBtn = msgBox.addButton(QMessageBox.Close)
+        msgBox.setDefaultButton(acceptBtn)
         msgBox.exec()
 
-        if msgBox.clickedButton == readMoreBtn:
+        if msgBox.clickedButton() == readMoreBtn:
             desktop_service = QDesktopServices()
             desktop_service.openUrl(QUrl('http://www.openstreetmap.org/copyright'))
 
@@ -209,7 +210,7 @@ class Main:
         if self.first_start == True:
             self.first_start = False
 
-            # self.licenceDialog()
+            self.licenceDialog()
 
             self.dlg = MainDialog()
 
