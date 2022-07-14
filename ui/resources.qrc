@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/osm_2_imm" >
+    <qresource prefix="/plugins/osm_2_imm/ui" >
         <file>icon.png</file>
     </qresource>
 </RCC>

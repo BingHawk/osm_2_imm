@@ -3,7 +3,10 @@ from shapely.geometry import MultiPolygon, Polygon, Point, MultiPoint, LineStrin
 from shapely.ops import linemerge
 import geopandas as gpd
 
-from .config.Config import Config
+try:
+    from ..settings.config import Config
+except ValueError:
+    from settings.config import Config
 from .query import Query
 
 import time

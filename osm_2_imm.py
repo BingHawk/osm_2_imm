@@ -30,10 +30,10 @@ from qgis.core import (QgsProject)
 import os.path
 
 # Initialize Qt resources from file resources.py
-from .resources import *
+from .ui.resources import *
 # Import the code for the dialog
-from .osm_2_imm_dialog import MainDialog
-from .runner import *
+from .ui.osm_2_imm_dialog import MainDialog
+from .core.runner import *
 # from utils.tools import get_setting, set_setting
 
 
@@ -165,7 +165,7 @@ class Main:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/osm_2_imm/icon.png'
+        icon_path = ':/plugins/osm_2_imm/ui/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'OSM to IMM'),
@@ -192,7 +192,7 @@ class Main:
         msgBox = QMessageBox()
         msgBox.setText(licenseMessage)
         readMoreBtn = msgBox.addButton(self.tr("Read more..."), QMessageBox.ActionRole)
-        acceptBtn = msgBox.addButton(QMessageBox.Close)
+        acceptBtn = msgBox.addButton(self.tr("Open OSM to IMM"), QMessageBox.AcceptRole)
         msgBox.setDefaultButton(acceptBtn)
         msgBox.exec()
 
@@ -241,7 +241,7 @@ class Main:
                 return
 
             outLoc = self.dlg.outputLoc.filePath()
-            main(bbox, project, outLoc)
+            main(bbox, outLoc = outLoc)
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
