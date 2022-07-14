@@ -5,7 +5,10 @@ import sys
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning) #Suppresses future warnings
 
-from ..settings.config import Config
+try:
+    from ..settings.config import Config
+except ValueError:
+    from settings.config import Config
 from .query import Query
 from .parser_new import parse, buffer
 
