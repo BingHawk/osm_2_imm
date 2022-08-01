@@ -57,7 +57,7 @@
     "inputTags": { "amenety": ["taxi"] },
     "outputTags": ["id", "geometry", "amenety", "capacity"]
   },
-  "networkPTLines": {
+  "networkPtLines": {
     "inputGeom": "way",
     "outputGeom": "line",
     "inputTags": {
@@ -85,7 +85,7 @@
       "network"
     ]
   },
-  "networkPTStops": {
+  "networkPtStops": {
     "inputGeom": "node",
     "outputGeom": "point",
     "inputTags": {

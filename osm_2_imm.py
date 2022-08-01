@@ -241,7 +241,7 @@ class Main:
                 return
 
             outLoc = self.dlg.outputLoc.filePath()
-            main(bbox, outLoc = outLoc)
+            main(bbox, outLoc)
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass

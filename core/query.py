@@ -27,13 +27,15 @@ class Query:
     #   bbox = string of coordinates in wgs 84 "west south east north"
     #   outputs an overpy result object
     @classmethod
-    def tagGet(cls, geom, tags, bbox):
+    def tagGet(cls, geom, tags, bbox, printquery = False):
         queryString = '''
         [out:json][bbox:{}];
         {};
         (._;>;);
         out;
         '''.format(bbox, cls.__unionTags(geom, tags))
+        if printquery:
+            print(queryString)
         while True:
             try:
                 print("querying OSM", end="\r")
@@ -50,13 +52,16 @@ class Query:
         return res
 
     @classmethod
-    def bboxGet(cls, bbox):
+    def bboxGet(cls, bbox, printquery = False):
         queryString = '''
         [out:json];
         nwr({});
         (._;>;);
         out;
         '''.format(bbox)
+
+        if printquery:
+            print(queryString)
 
         while True:
             try:

@@ -11,6 +11,9 @@ except ValueError:
     from settings.config import Config
 from .query import Query
 from .parser_new import parse, buffer
+from .parser_qgis import parse as parse_q
+
+from .utilities.tools import camelCaseSplit
 
 
 import time
@@ -62,26 +65,8 @@ def write(gdf, filename, layer):
 
         print('Layer written: "{}" written to "{}"'.format(layer,fullpath))
 
-
-# camelCaseSplit splits an input camel case string into a list of the words
-# ex "camelCaseSplit" will return ["camel", "Case", "Split"]
-def camelCaseSplit(str):
      
-    start_idx = [i for i, e in enumerate(str)
-                 if e.isupper()] + [len(str)]
- 
-    start_idx = [0] + start_idx
-    return [str[x: y] for x, y in zip(start_idx, start_idx[1:])]
-     
-def main(bbox, **kwargs):
-    outLoc = None
-    test = False
-    for key in kwargs.keys():
-        if key == 'outLoc':
-            outLoc = kwargs['outLoc']
-        if key == 'test':
-            test = kwargs['test']
-
+def main(bbox, outLoc):
     tic = time.time()
     if bbox is None:
         bbox = CONFIG.bbox_M
@@ -105,7 +90,7 @@ def main(bbox, **kwargs):
             if all[key] is not None:
                 all[key] = buffer(all[key], CONFIG.bufferSettings['voidGreyAreas'])
 
-        if test:
+        if outLoc is None:
             write(all[key],filename,layer)
         else: 
             qWrite(all[key],outLoc,filename,layer)
@@ -128,7 +113,28 @@ def main(bbox, **kwargs):
     
 # __________TESTING CODE_____________
 def test():
-    pass
+    res = Query.tagGet("way", {'highway': [ "motorway",
+                                            "trunk",
+                                            "primary",
+                                            "secondary",
+                                            "tertiary",
+                                            "unclassified",
+                                            "residential",
+                                            "motorway_link",
+                                            "trunk_link",
+                                            "primary_link",
+                                            "secondary_link",
+                                            "tertiary_link",
+                                            "living_street",
+                                            "service",
+                                            "road"]},
+                                CONFIG.bbox_M, printquery=True)
+
+    parsed = parse_q(res)
+    print("")
+    for f in parsed['voidTrees'].getFeatures():
+        print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
+
 
 
 
