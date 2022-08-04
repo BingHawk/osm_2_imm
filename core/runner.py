@@ -9,6 +9,8 @@ try:
     from ..settings.config import Config
 except ValueError:
     from settings.config import Config
+except ImportError:
+    from settings.config import Config
 from .query import Query
 from .parser_new import parse, buffer
 from .parser_qgis import parse as parse_q
@@ -66,7 +68,7 @@ def write(gdf, filename, layer):
         print('Layer written: "{}" written to "{}"'.format(layer,fullpath))
 
      
-def main(bbox, outLoc):
+def main(bbox=None, outLoc=None):
     tic = time.time()
     if bbox is None:
         bbox = CONFIG.bbox_M
@@ -113,27 +115,45 @@ def main(bbox, outLoc):
     
 # __________TESTING CODE_____________
 def test():
-    res = Query.tagGet("way", {'highway': [ "motorway",
-                                            "trunk",
-                                            "primary",
-                                            "secondary",
-                                            "tertiary",
-                                            "unclassified",
-                                            "residential",
-                                            "motorway_link",
-                                            "trunk_link",
-                                            "primary_link",
-                                            "secondary_link",
-                                            "tertiary_link",
-                                            "living_street",
-                                            "service",
-                                            "road"]},
-                                CONFIG.bbox_M, printquery=True)
+    """ Tests nodes """
+    # res = Query.tagGet(CONFIG.usesActivities['inputGeom'],
+    #                 CONFIG.usesActivities['inputTags'],
+    #                 CONFIG.bbox_M,
+    #                 printquery=True)
+
+    """ Tests ways """
+    # res = Query.tagGet(CONFIG.networkStreet['inputGeom'],
+    #                     CONFIG.networkStreet['inputTags'],
+    #                     CONFIG.bbox_M,
+    #                     printquery=True)
+
+    """ Tests relations containg nodes and ways """
+    # res = Query.tagGet('rel',
+    #                     CONFIG.networkPTStops['inputTags'],
+    #                     CONFIG.bbox_M,
+    #                     printquery=True)
+
+    """ Tests relations containng polygons"""
+    # res = Query.tagGet('rel',
+    #                     CONFIG.volumeBuildings['inputTags'],
+    #                     CONFIG.bbox_M,
+    #                     printquery=True)
+
+    """ Tests everything in the bbox"""
+    res = Query.bboxGet(CONFIG.bbox_M, printquery=True)
+
+
+
+    
 
     parsed = parse_q(res)
     print("")
-    for f in parsed['voidTrees'].getFeatures():
-        print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
+    for key in parsed.keys():
+        pr = parsed[key].dataProvider()
+        print(key, pr.featureCount())
+        # if key == "networkPtStops":
+        #     for f in parsed[key].getFeatures():
+        #         print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
 
 
 

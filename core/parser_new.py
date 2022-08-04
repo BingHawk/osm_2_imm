@@ -7,6 +7,8 @@ try:
     from ..settings.config import Config
 except ValueError:
     from settings.config import Config
+except ImportError:
+    from settings.config import Config
 
 ## set upp ##
 
