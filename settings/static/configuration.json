@@ -509,7 +509,7 @@
   },
   "boundariesAdministrative": {
     "inputGeom": "way",
-    "outputGeom": "point",
+    "outputGeom": "polygon",
     "inputTags": {
       "boundary": ["administrative"]
     },
