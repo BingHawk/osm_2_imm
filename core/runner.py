@@ -5,6 +5,8 @@ import sys
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning) #Suppresses future warnings
 
+from qgis.core import QgsProject
+
 try:
     from ..settings.config import Config
 except ValueError:
@@ -67,7 +69,28 @@ def write(gdf, filename, layer):
 
         print('Layer written: "{}" written to "{}"'.format(layer,fullpath))
 
-     
+
+def qgsMain(project: QgsProject, bbox:str = None, ):
+    tic = time.time()
+    if bbox is None:
+        bbox = CONFIG.bbox_M
+    qTic = time.time()
+    res = Query.bboxGet(bbox)
+    qToc = time.time()
+    qTime = qToc - qTic
+
+    layers = parse(res)
+
+    for qVectorLayer in layers.values():
+        project.addMapLayer(qVectorLayer)
+
+    toc = time.time()
+
+    print("Done in {} seconds.".format(toc-tic))
+    print(
+        """Query time: {} 
+        """.format(qTime))
+
 def main(bbox=None, outLoc=None):
     tic = time.time()
     if bbox is None:
@@ -103,12 +126,6 @@ def main(bbox=None, outLoc=None):
     print(
         """Query time: {} 
         """.format(qTime))
-
-
-
-
-
-
 
 
 
