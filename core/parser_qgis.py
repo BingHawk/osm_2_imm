@@ -183,6 +183,11 @@ def parse(res):
             qPointF.setGeometry(QgsGeometry.fromPointXY(nodeGeoms[node.id]))
 
             featureAdd(layers[feature], qPointF)
+    
+    print("")
+    for key in layers.keys():
+        pr = layers[key].dataProvider()
+        print(key, pr.featureCount())
 
     
     print("Parsing Ways ", end="\r")
@@ -192,11 +197,8 @@ def parse(res):
         wayGeoms[way.id] = QgsGeometry.fromPolylineXY(points)
 
         features = getFeatures(way)
-        q = 1
         if len(features) == 0:
             continue
-
-
 
         for feature in features: 
             if not relevant(way,CONFIG.configJson[feature]):
@@ -207,8 +209,19 @@ def parse(res):
             line = wayGeoms[way.id]
             # print("3", line)
             if checkForPolygon(way, line):
-                qLineF.setGeometry(QgsGeometry.polygonize([line]))
+                if feature == "volumeBuildings":
+                    print("polygon true")
+                pollyCollection = QgsGeometry.polygonize([line])
+                outGeom = pollyCollection.asGeometryCollection()[0]
+                if len(pollyCollection.asGeometryCollection()) > 0:
+                    print("lost geom")
+                if CONFIG.configJson[feature]['outputGeom'] == 'point':
+                    qLineF.setGeometry(outGeom.centroid())
+                else:
+                    qLineF.setGeometry(QgsGeometry(outGeom))
             else:
+                if feature == "volumeBuildings":
+                    print("polygon false")
                 if CONFIG.configJson[feature]['outputGeom'] == 'polygon':
                     try:
                         qLineF.setGeometry(buffer(line, tags, CONFIG.bufferSettings[feature]))
@@ -216,8 +229,19 @@ def parse(res):
                         pass
                 else:
                     qLineF.setGeometry(line)
+            
+            if feature == "volumeBuildings":
+                print(qLineF.attributes())
+                print(qLineF.geometry().asWkt())
 
             featureAdd(layers[feature], qLineF)
+
+    print("")
+    for key in layers.keys():
+        pr = layers[key].dataProvider()
+        print(key, pr.featureCount())
+            # for f in layers["volumeBuildings"].getFeatures():
+            #     print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
 
     print("Parsing Relations", end="\r")
     iter = 0
@@ -277,8 +301,6 @@ def parse(res):
                 soloPolyCollection = QgsGeometry.polygonize(soloMembers)
                 innerPolyCollection = QgsGeometry.polygonize(innerMembers)
                 outerPolyCollection = QgsGeometry.polygonize(outerMembers)
-                holePolyCollection = 0
-                outPoly = 0
 
                 if len(innerMembers) > 0: #If inner members, subtract these from outer members.
                     holePolyCollection = outerPolyCollection.makeDifference(innerPolyCollection)

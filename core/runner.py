@@ -151,7 +151,7 @@ def test():
     for key in parsed.keys():
         pr = parsed[key].dataProvider()
         print(key, pr.featureCount())
-        # if key == "networkPtStops":
+        # if key == "volumeBuildings":
         #     for f in parsed[key].getFeatures():
         #         print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
 
