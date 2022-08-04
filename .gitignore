@@ -155,4 +155,4 @@ cython_debug/
 *.DS_store
 
 # Test output files
-outLayers/*
+outLayers/
