@@ -22,14 +22,12 @@
       ]
     },
     "outputTags": [
-      "id",
       "highway",
       "name",
       "postal_code",
       "loc_ref",
       "maxspeed",
       "oneway",
-      "geometry",
       "cycling_width"
     ]
   },
@@ -37,25 +35,25 @@
     "inputGeom": "way",
     "outputGeom": "line",
     "inputTags": { "highway": ["cycleway"] },
-    "outputTags": ["id", "geometry", "highway", "cycling_width"]
+    "outputTags": ["highway", "cycling_width"]
   },
   "networkBikeRacks": {
     "inputGeom": "node",
     "outputGeom": "point",
     "inputTags": { "amenety": ["bicycle_parking", "bicycle_rental"] },
-    "outputTags": ["id", "geometry", "amenety", "capacity"]
+    "outputTags": ["amenety", "capacity"]
   },
   "networkParkings": {
     "inputGeom": "node",
     "outputGeom": "point",
     "inputTags": { "amenety": ["parking", "parking_space"] },
-    "outputTags": ["id", "geometry", "amenety", "parking", "fee", "capacity"]
+    "outputTags": ["amenety", "parking", "fee", "capacity"]
   },
   "networkTaxi": {
     "inputGeom": "node",
     "outputGeom": "point",
     "inputTags": { "amenety": ["taxi"] },
-    "outputTags": ["id", "geometry", "amenety", "capacity"]
+    "outputTags": ["amenety", "capacity"]
   },
   "networkPtLines": {
     "inputGeom": "way",
@@ -75,8 +73,6 @@
       "highway": ["bus_guideway"]
     },
     "outputTags": [
-      "id",
-      "geometry",
       "route",
       "highway",
       "name",
@@ -103,8 +99,6 @@
       "amenety": ["car_sharing", "ferry_terminal"]
     },
     "outputTags": [
-      "id",
-      "geometry",
       "route",
       "amenety",
       "name",
@@ -380,8 +374,6 @@
       "amenety",
       "leissure",
       "website",
-      "id",
-      "geometry",
       "opening_hours",
       "operator",
       "brand"
@@ -428,7 +420,7 @@
         "winter_sports"
       ]
     },
-    "outputTags": ["id", "geometry", "landuse"]
+    "outputTags": ["landuse"]
   },
   "usesServices": {
     "inputGeom": "node",
@@ -498,8 +490,6 @@
       ]
     },
     "outputTags": [
-      "id",
-      "geometry",
       "amenety",
       "opening_hours",
       "name",
@@ -513,7 +503,7 @@
     "inputTags": {
       "boundary": ["administrative"]
     },
-    "outputTags": ["id", "geometry", "boundary", "admin_level", "population"]
+    "outputTags": ["boundary", "admin_level", "population"]
   },
   "voidAreasOpenAir": {
     "inputGeom": "way",
@@ -534,7 +524,7 @@
         "fittness_station"
       ]
     },
-    "outputTags": ["id", "geometry", "leissure", "sport", "tourism", "access"]
+    "outputTags": ["leissure", "sport", "tourism", "access"]
   },
   "voidBlocks": {
     "inputGeom": "way",
@@ -557,7 +547,7 @@
         "road"
       ]
     },
-    "outputTags": ["id", "geometry", "highway"]
+    "outputTags": ["highway"]
   },
   "voidBlueAreas": {
     "inputGeom": "way",
@@ -576,7 +566,7 @@
         "fish_pass"
       ]
     },
-    "outputTags": ["id", "geometry", "leissure", "natural", "waterway"]
+    "outputTags": ["leissure", "natural", "waterway"]
   },
   "voidGreenAreas": {
     "inputGeom": "way",
@@ -615,8 +605,6 @@
       "boundary": ["national_park", "protected_area"]
     },
     "outputTags": [
-      "id",
-      "geometry",
       "landuse",
       "natural",
       "leissure",
@@ -655,15 +643,13 @@
         "corridor"
       ]
     },
-    "outputTags": ["id", "geometry", "width", "highway", "surface"]
+    "outputTags": ["width", "highway", "surface"]
   },
   "voidTrees": {
     "inputGeom": "node",
     "outputGeom": "point",
     "inputTags": { "natural": ["tree", "tree_row"] },
     "outputTags": [
-      "id",
-      "geometry",
       "natural",
       "height",
       "circumference",
@@ -745,8 +731,6 @@
       ]
     },
     "outputTags": [
-      "id",
-      "geometry",
       "building",
       "building:level",
       "building:height",
@@ -764,7 +748,7 @@
     "bbox_std_dakar": "14.72, -17.441, 14.73, -17.431"
   },
   "crs": {
-    "projected": "epsg:3857",
-    "output": "epsg:4326"
+    "projected": "EPSG:3857",
+    "output": "EPSG:4326"
   }
 }

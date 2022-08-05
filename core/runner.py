@@ -5,7 +5,11 @@ import sys
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning) #Suppresses future warnings
 
-from qgis.core import QgsProject
+from qgis.core import QgsProject, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsVectorLayer
+try:
+    import processing
+except ModuleNotFoundError:
+    pass
 
 try:
     from ..settings.config import Config
@@ -15,7 +19,7 @@ except ImportError:
     from settings.config import Config
 from .query import Query
 from .parser_new import parse, buffer
-from .parser_qgis import parse as parse_q
+from .parser_qgis import parse as qParse, buffer as qBuffer
 
 from .utilities.tools import camelCaseSplit
 
@@ -69,27 +73,63 @@ def write(gdf, filename, layer):
 
         print('Layer written: "{}" written to "{}"'.format(layer,fullpath))
 
+def transformQLayer(qLayer:QgsVectorLayer, crsSrc:QgsCoordinateReferenceSystem, crsDest:QgsCoordinateReferenceSystem, project:QgsProject, backward:bool = False) -> QgsVectorLayer:
+    transformContext = project.transformContext()
+    xform = QgsCoordinateTransform(crsSrc, crsDest, transformContext)
+    feats = []
+    for f in qLayer.getFeatures():
+        g = f.geometry()
+        if backward:
+            g.transform(xform, QgsCoordinateTransform.BackwardTransform)
+        else:
+            g.transform(xform)
+        f.setGeometry(g)
+        feats.append(f)
+
+    columns = [field for field in qLayer.fields()]
+
+    if qLayer.wkbType() == 1:
+        vl = QgsVectorLayer("point", "grey_areas","memory")
+    elif qLayer.wkbType() == 2:
+        vl = QgsVectorLayer("linestring", "grey_areas","memory")
+    elif qLayer.wkbType() == 3:
+        vl = QgsVectorLayer("polygon", "grey_areas","memory")
+        
+    vl.setCrs(crsDest)
+    pr = vl.dataProvider()
+    pr.addAttributes(columns)
+    pr.addFeatures(feats)
+    vl.updateExtents()
+
+    return vl
 
 def qgsMain(project: QgsProject, bbox:str = None, ):
-    tic = time.time()
     if bbox is None:
         bbox = CONFIG.bbox_M
-    qTic = time.time()
     res = Query.bboxGet(bbox)
-    qToc = time.time()
-    qTime = qToc - qTic
 
-    layers = parse(res)
+    layers = qParse(res)
 
-    for qVectorLayer in layers.values():
+    crsOsm = QgsCoordinateReferenceSystem("EPSG:4326")
+    crsProj = QgsCoordinateReferenceSystem(CONFIG.projectedCrs) 
+    voidGreyAreasTranformed = transformQLayer(layers['voidGreyAreas'], crsOsm, crsProj, project)
+
+    buffered = qBuffer(voidGreyAreasTranformed, CONFIG.bufferSettings['voidGreyAreas'])
+    buffered = transformQLayer(buffered, crsProj, crsOsm, project)
+
+    # parameterProject = {'INPUT': layers['voidGreyAreas'], 'TARGET_CRS': CONFIG.projectedCrs,
+    #              'OUTPUT': 'memory:grey_areas_buffered'}
+    # reprojected = processing.run('native:reprojectlayer', parameterProject)
+
+    # buffered = qBuffer(reprojected['OUTPUT'], CONFIG.bufferSettings['voidGreyAreas'])
+
+
+
+    layers['voidGreyAreas'] = buffered
+
+    for feature in layers.keys():
+        qVectorLayer = layers[feature] 
         project.addMapLayer(qVectorLayer)
-
-    toc = time.time()
-
-    print("Done in {} seconds.".format(toc-tic))
-    print(
-        """Query time: {} 
-        """.format(qTime))
 
 def main(bbox=None, outLoc=None):
     tic = time.time()
@@ -127,11 +167,15 @@ def main(bbox=None, outLoc=None):
         """Query time: {} 
         """.format(qTime))
 
+    
+
 
 
     
 # __________TESTING CODE_____________
 def test():
+    tic = time.time()
+    qTic = time.time()
     """ Tests nodes """
     # res = Query.tagGet(CONFIG.usesActivities['inputGeom'],
     #                 CONFIG.usesActivities['inputTags'],
@@ -159,17 +203,61 @@ def test():
     """ Tests everything in the bbox"""
     res = Query.bboxGet(CONFIG.bbox_M, printquery=True)
 
-
-
-    
-
-    parsed = parse_q(res)
     print("")
-    for key in parsed.keys():
-        pr = parsed[key].dataProvider()
+
+    qToc = time.time()
+    qTime = qToc - qTic
+
+    layers = qParse(res)
+
+    project = QgsProject().instance()
+    
+    crsOsm = QgsCoordinateReferenceSystem("EPSG:4326")
+    crsProj = QgsCoordinateReferenceSystem(CONFIG.projectedCrs)
+
+    voidGreyAreasTranformed = transformQLayer(layers['voidGreyAreas'], crsOsm, crsProj, project)
+
+    # for f in voidGreyAreasTranformed.getFeatures():
+    #     if f.id() > 493:
+    #         print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
+
+    buffered = qBuffer(voidGreyAreasTranformed, CONFIG.bufferSettings['voidGreyAreas'])
+
+    for f in buffered.getFeatures():
+        if f.id() > 493:
+            print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
+
+    bufferedtransformed = transformQLayer(buffered, crsProj, crsOsm,  project)
+    print("tranformed back")
+
+    print(bufferedtransformed.isValid())
+    for f in bufferedtransformed.getFeatures():
+        print(f.id())
+        if f.id() > 493:
+            print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
+
+
+        
+
+    # voidGreyAreasBuffered = qBuffer(parsed['voidGreyAreas'], CONFIG.bufferSettings['voidGreyAreas'])
+    # for f in voidGreyAreasBuffered.getFeatures():
+    #             print("")
+    #             print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
+
+
+    toc = time.time()
+
+    print("Done in {} seconds.".format(toc-tic))
+    print(
+        """Query time: {} 
+        """.format(qTime))
+
+    for key in layers.keys():
+        pr = layers[key].dataProvider()
         print(key, pr.featureCount())
         # if key == "volumeBuildings":
         #     for f in parsed[key].getFeatures():
+        #         print("")
         #         print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
 
 

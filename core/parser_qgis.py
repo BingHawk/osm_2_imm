@@ -8,7 +8,7 @@ from qgis.core import ( QgsVectorLayer,
                         QgsFeature,
                         QgsFields,
                         QgsMultiPolygon,
-                        QgsCoordinateReferenceSystem )
+                        QgsCoordinateReferenceSystem)
 from qgis.PyQt.QtCore import QVariant
 
 from .utilities.tools import camelCaseSplit
@@ -54,28 +54,32 @@ def getFeatures(obj:overpy.Result) -> list:
             continue
     return features
 
-# getTags is a helper function that returns a dictionary of tags that should be kept
-# feat - a overpy relation, way or node whose tags are candidates. 
-# confFeature - the attribute of CONFIG that decides which tags should be output
-# tags - "All" or "Config" deciding if all tags or those listed in config should be outputed. 
-def getTags(feat, confFeature):
-    t = {}
-    for key in feat.tags.keys():
-        if key in confFeature['outputTags']:
-            t[key] = feat.tags[key]
-    return t
+def createQgsFeature(obj:overpy.Result, feature:str) -> QgsFeature:
+    """
+    Creates a QgsFeature with and fills it with the tags of obj that exist in feature "outputTags" setting
 
-def initFeature(tags:dict, id:int) -> QgsFeature:
+    param: 
+        obj type: A node, way or relation from an overpy.Result object
+        obj val: The node way or relation that should be converted to a feature. 
+
+        feature val: The feature of CONFIG the object belongs to. 
+    
+    ret: A QgsFeature that contains the fields specified in config filled with data from obj. Does not contain a geometry.
+    """
+
+    outTags = CONFIG.configJson[feature]['outputTags']
+
     fields = QgsFields()
-    for key in tags.keys() : fields.append(QgsField(key, QVariant.String)) 
     fields.append(QgsField("OSM id", QVariant.Int))
+    for key in outTags : fields.append(QgsField(key, QVariant.String)) 
     f = QgsFeature(fields)
-    for key in tags.keys(): 
-        f[key] = tags[key]
-    f['OSM id'] = id
+    f['OSM id'] = obj.id
+    for key in obj.tags.keys(): 
+        if key in outTags:
+            f[key] = obj.tags[key]
     return f
 
-def featureAdd(lyr:QgsVectorLayer, feat:QgsFeature):
+def addQgsFeature(lyr:QgsVectorLayer, feat:QgsFeature):
     """ Helper functions that adds a feature to a layers data provider and updates the layer"""
 
     pr = lyr.dataProvider()
@@ -130,7 +134,7 @@ def checkForPolygon(OsmFeat, geom):
         return False
                 
 
-def createLayers() -> dict:
+def createQgsLayers() -> dict:
     """ creates QgsVectorLayers for each output feature and returns the in a dictionary with the layer names as keys """
 
     lyrs = {}
@@ -143,12 +147,17 @@ def createLayers() -> dict:
         elif outGeom == 'line':
             vl = QgsVectorLayer("LineString", name, "memory")
         elif outGeom == 'polygon':
-            vl = QgsVectorLayer("Polygon", name, "memory")
+            if feature in CONFIG.bufferSettings.keys():
+                vl = QgsVectorLayer("LineString", name, "memory")
+            else:
+                vl = QgsVectorLayer("Polygon", name, "memory")
 
         crs = QgsCoordinateReferenceSystem("EPSG:4326")
         vl.setCrs(crs)
         pr = vl.dataProvider()
-        columns = [QgsField(tag, QVariant.String) for tag in CONFIG.configJson[feature]['outputTags']]
+        columns = [QgsField("OSM id", QVariant.Int)]
+        tags = [QgsField(tag, QVariant.String) for tag in CONFIG.configJson[feature]['outputTags']]
+        columns.extend(tags)
         pr.addAttributes(columns)
         vl.updateFields() 
 
@@ -163,7 +172,7 @@ def createLayers() -> dict:
 # output is a dictionary of geodataframes
 # Each dataframe refers to one feature, specified by the key.
 def parse(res):
-    layers = createLayers()
+    layers = createQgsLayers()
 
     print("Parsing Nodes", end="\r")
     nodeGeoms = {}
@@ -178,17 +187,10 @@ def parse(res):
             if not relevant(node,CONFIG.configJson[feature]):
                 continue
         
-            tags = getTags(node, CONFIG.configJson[feature])
-            qPointF = initFeature(tags, node.id)
+            qPointF = createQgsFeature(node, feature)
             qPointF.setGeometry(QgsGeometry.fromPointXY(nodeGeoms[node.id]))
 
-            featureAdd(layers[feature], qPointF)
-    
-    print("")
-    for key in layers.keys():
-        pr = layers[key].dataProvider()
-        print(key, pr.featureCount())
-
+            addQgsFeature(layers[feature], qPointF)
     
     print("Parsing Ways ", end="\r")
     wayGeoms = {}
@@ -204,44 +206,26 @@ def parse(res):
             if not relevant(way,CONFIG.configJson[feature]):
                 continue
 
-            tags = getTags(way, CONFIG.configJson[feature])
-            qLineF = initFeature(tags, way.id)
+            qLineF = createQgsFeature(way, feature)
             line = wayGeoms[way.id]
             # print("3", line)
             if checkForPolygon(way, line):
-                if feature == "volumeBuildings":
-                    print("polygon true")
                 pollyCollection = QgsGeometry.polygonize([line])
-                outGeom = pollyCollection.asGeometryCollection()[0]
-                if len(pollyCollection.asGeometryCollection()) > 0:
-                    print("lost geom")
+                outGeom = QgsGeometry.collectGeometry(pollyCollection.asGeometryCollection())
                 if CONFIG.configJson[feature]['outputGeom'] == 'point':
                     qLineF.setGeometry(outGeom.centroid())
                 else:
                     qLineF.setGeometry(QgsGeometry(outGeom))
             else:
-                if feature == "volumeBuildings":
-                    print("polygon false")
-                if CONFIG.configJson[feature]['outputGeom'] == 'polygon':
-                    try:
-                        qLineF.setGeometry(buffer(line, tags, CONFIG.bufferSettings[feature]))
-                    except KeyError:
-                        pass
-                else:
+                # if CONFIG.configJson[feature]['outputGeom'] == 'polygon':
+                #     try:
+                #         qLineF.setGeometry(buffer(line, way.tags, CONFIG.bufferSettings[feature]))
+                #     except KeyError:
+                #         pass
+                # else:
                     qLineF.setGeometry(line)
-            
-            if feature == "volumeBuildings":
-                print(qLineF.attributes())
-                print(qLineF.geometry().asWkt())
 
-            featureAdd(layers[feature], qLineF)
-
-    print("")
-    for key in layers.keys():
-        pr = layers[key].dataProvider()
-        print(key, pr.featureCount())
-            # for f in layers["volumeBuildings"].getFeatures():
-            #     print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
+            addQgsFeature(layers[feature], qLineF)
 
     print("Parsing Relations", end="\r")
     iter = 0
@@ -256,8 +240,7 @@ def parse(res):
             if not relevant(relation, CONFIG.configJson[feature]):
                 continue
             
-            tags = getTags(relation, CONFIG.configJson[feature])
-            qRelF = initFeature(tags, relation.id)
+            qRelF = createQgsFeature(relation, feature)
 
 
             if CONFIG.configJson[feature]['outputGeom'] == 'point':
@@ -269,7 +252,7 @@ def parse(res):
                 
                 qRelF.setGeometry(QgsGeometry.fromMultiPointXY(p))
                 
-                featureAdd(layers[feature], qRelF)
+                addQgsFeature(layers[feature], qRelF)
 
 
             elif CONFIG.configJson[feature]['outputGeom'] == 'line':
@@ -281,7 +264,7 @@ def parse(res):
                 
                 outGeom = mergeLineGeoms(*lines)
                 qRelF.setGeometry(outGeom)
-                featureAdd(layers[feature], qRelF)
+                addQgsFeature(layers[feature], qRelF)
 
             elif CONFIG.configJson[feature]['outputGeom'] == 'polygon':
                 soloMembers = []
@@ -302,21 +285,25 @@ def parse(res):
                 innerPolyCollection = QgsGeometry.polygonize(innerMembers)
                 outerPolyCollection = QgsGeometry.polygonize(outerMembers)
 
-                if len(innerMembers) > 0: #If inner members, subtract these from outer members.
-                    holePolyCollection = outerPolyCollection.makeDifference(innerPolyCollection)
-                elif len(outerMembers) > 0: #outer members but no inner members
-                    holePolyCollection = outerPolyCollection
-                else: # Neither inner nor outer. Making sure holePolyCollection is empty
-                    holePolyCollection = outerPolyCollection
+                soloMultiPoly = QgsGeometry.collectGeometry(soloPolyCollection.asGeometryCollection())
+                innerMultiPoly = QgsGeometry.collectGeometry(innerPolyCollection.asGeometryCollection())
+                outerMultiPoly = QgsGeometry.collectGeometry(outerPolyCollection.asGeometryCollection())
 
-                outGeom = soloPolyCollection.combine(holePolyCollection)
+                if len(innerMembers) > 0: #If inner members, subtract these from outer members.
+                    holeMultiPoly = outerMultiPoly.difference(innerMultiPoly)
+                elif len(outerMembers) > 0: #outer members but no inner members
+                    holeMultiPoly = outerMultiPoly
+                else: # Neither inner nor outer. Making sure holePolyCollection is empty
+                    holeMultiPoly = outerMultiPoly
+
+                outGeom = QgsGeometry.collectGeometry([holeMultiPoly,soloMultiPoly])
 
                 qRelF.setGeometry(outGeom)
-                featureAdd(layers[feature], qRelF)
+                addQgsFeature(layers[feature], qRelF)
     return layers
 
         
-def buffer(geom: QgsGeometry, tags:dict, bufferScheme:dict) -> QgsGeometry:
+def buffer(layer: QgsVectorLayer, bufferScheme:dict) -> QgsGeometry:
     """
     Buffer ads a buffer for the input feature based on a mapping setting the buffer radii for each tag value
     
@@ -326,17 +313,34 @@ def buffer(geom: QgsGeometry, tags:dict, bufferScheme:dict) -> QgsGeometry:
         bufferScheme: a CONFIG attribute containing a dictionary with buffer radii for every Key-Value tag pair in the feature.
     ret val: a QgsGeometry of type polygon. 
     """
+    vl = QgsVectorLayer("Polygon", "grey_areas", "memory")
 
-    for keyTag in bufferScheme.keys():
-        try:
-            geomTagValue = tags[keyTag]
-        except KeyError:
-            print(f"The key {keyTag} does not exist in the feature.\n\tExisting tags are {tags}")
-        try:
-            bufferVal = bufferScheme[keyTag][geomTagValue]
-            buffered = geom.buffer(bufferVal,5)
-        except KeyError:
-            print(f"The tag {keyTag}:{geomTagValue} has no buffering setting recorded")
-    return buffered
+    crs = QgsCoordinateReferenceSystem(CONFIG.projectedCrs)
+    vl.setCrs(crs)
+    pr = vl.dataProvider()
+    columns = [QgsField("OSM id", QVariant.Int)]
+    tags = [QgsField(tag, QVariant.String) for tag in CONFIG.configJson["voidGreyAreas"]['outputTags']]
+    columns.extend(tags)
+    pr.addAttributes(columns)
+    vl.updateFields()
+
+
+    layer.startEditing()
+    pr = layer.dataProvider()
+
+    for bufferKey in bufferScheme.keys():
+        fieldindex = pr.fields().indexOf(bufferKey)
+        for feature in layer.getFeatures():
+            geomTagValue = feature.attributes()[fieldindex]
+            try:
+                bufferVal = bufferScheme[bufferKey][geomTagValue]
+            except KeyError:
+                continue
+
+            buffered = feature.geometry().buffer(bufferVal,5)
+            feature.setGeometry(buffered)
+            addQgsFeature(vl,feature)
+
+    return vl
 
 # %%
