@@ -22,12 +22,14 @@
       ]
     },
     "outputTags": [
+      "id",
       "highway",
       "name",
       "postal_code",
       "loc_ref",
       "maxspeed",
       "oneway",
+      "geometry",
       "cycling_width"
     ]
   },
@@ -35,27 +37,27 @@
     "inputGeom": "way",
     "outputGeom": "line",
     "inputTags": { "highway": ["cycleway"] },
-    "outputTags": ["highway", "cycling_width"]
+    "outputTags": ["id", "geometry", "highway", "cycling_width"]
   },
   "networkBikeRacks": {
     "inputGeom": "node",
     "outputGeom": "point",
     "inputTags": { "amenety": ["bicycle_parking", "bicycle_rental"] },
-    "outputTags": ["amenety", "capacity"]
+    "outputTags": ["id", "geometry", "amenety", "capacity"]
   },
   "networkParkings": {
     "inputGeom": "node",
     "outputGeom": "point",
     "inputTags": { "amenety": ["parking", "parking_space"] },
-    "outputTags": ["amenety", "parking", "fee", "capacity"]
+    "outputTags": ["id", "geometry", "amenety", "parking", "fee", "capacity"]
   },
   "networkTaxi": {
     "inputGeom": "node",
     "outputGeom": "point",
     "inputTags": { "amenety": ["taxi"] },
-    "outputTags": ["amenety", "capacity"]
+    "outputTags": ["id", "geometry", "amenety", "capacity"]
   },
-  "networkPtLines": {
+  "networkPTLines": {
     "inputGeom": "way",
     "outputGeom": "line",
     "inputTags": {
@@ -73,6 +75,8 @@
       "highway": ["bus_guideway"]
     },
     "outputTags": [
+      "id",
+      "geometry",
       "route",
       "highway",
       "name",
@@ -81,7 +85,7 @@
       "network"
     ]
   },
-  "networkPtStops": {
+  "networkPTStops": {
     "inputGeom": "node",
     "outputGeom": "point",
     "inputTags": {
@@ -99,6 +103,8 @@
       "amenety": ["car_sharing", "ferry_terminal"]
     },
     "outputTags": [
+      "id",
+      "geometry",
       "route",
       "amenety",
       "name",
@@ -374,6 +380,8 @@
       "amenety",
       "leissure",
       "website",
+      "id",
+      "geometry",
       "opening_hours",
       "operator",
       "brand"
@@ -420,7 +428,7 @@
         "winter_sports"
       ]
     },
-    "outputTags": ["landuse"]
+    "outputTags": ["id", "geometry", "landuse"]
   },
   "usesServices": {
     "inputGeom": "node",
@@ -490,6 +498,8 @@
       ]
     },
     "outputTags": [
+      "id",
+      "geometry",
       "amenety",
       "opening_hours",
       "name",
@@ -499,11 +509,11 @@
   },
   "boundariesAdministrative": {
     "inputGeom": "way",
-    "outputGeom": "polygon",
+    "outputGeom": "point",
     "inputTags": {
       "boundary": ["administrative"]
     },
-    "outputTags": ["boundary", "admin_level", "population"]
+    "outputTags": ["id", "geometry", "boundary", "admin_level", "population"]
   },
   "voidAreasOpenAir": {
     "inputGeom": "way",
@@ -524,7 +534,7 @@
         "fittness_station"
       ]
     },
-    "outputTags": ["leissure", "sport", "tourism", "access"]
+    "outputTags": ["id", "geometry", "leissure", "sport", "tourism", "access"]
   },
   "voidBlocks": {
     "inputGeom": "way",
@@ -547,7 +557,7 @@
         "road"
       ]
     },
-    "outputTags": ["highway"]
+    "outputTags": ["id", "geometry", "highway"]
   },
   "voidBlueAreas": {
     "inputGeom": "way",
@@ -566,7 +576,7 @@
         "fish_pass"
       ]
     },
-    "outputTags": ["leissure", "natural", "waterway"]
+    "outputTags": ["id", "geometry", "leissure", "natural", "waterway"]
   },
   "voidGreenAreas": {
     "inputGeom": "way",
@@ -605,6 +615,8 @@
       "boundary": ["national_park", "protected_area"]
     },
     "outputTags": [
+      "id",
+      "geometry",
       "landuse",
       "natural",
       "leissure",
@@ -643,13 +655,15 @@
         "corridor"
       ]
     },
-    "outputTags": ["width", "highway", "surface"]
+    "outputTags": ["id", "geometry", "width", "highway", "surface"]
   },
   "voidTrees": {
     "inputGeom": "node",
     "outputGeom": "point",
     "inputTags": { "natural": ["tree", "tree_row"] },
     "outputTags": [
+      "id",
+      "geometry",
       "natural",
       "height",
       "circumference",
@@ -731,15 +745,17 @@
       ]
     },
     "outputTags": [
+      "id",
+      "geometry",
       "building",
-      "building:levels",
+      "building:level",
       "building:height",
       "building:use"
     ]
   },
   "bbox": {
     "bbox_xxlarge": "45.2, 9, 45.7, 9.5",
-    "bbox_xlarge": "45.43, 9.14, 45.53, 9.24",
+    "bbox_xlarge": "45.43, 9.13, 45.51, 9.26",
     "bbox_large": "45.45, 9.2, 45.5, 9.25",
     "bbox_std": "45.47692, 9.22551, 45.47945, 9.23028",
     "bbox_small": "45.47892, 9.22551, 45.47945, 9.22628",
@@ -748,7 +764,7 @@
     "bbox_std_dakar": "14.72, -17.441, 14.73, -17.431"
   },
   "crs": {
-    "projected": "EPSG:3857",
-    "output": "EPSG:4326"
+    "projected": "epsg:3857",
+    "output": "epsg:4326"
   }
 }

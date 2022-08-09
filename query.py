@@ -27,27 +27,13 @@ class Query:
     #   bbox = string of coordinates in wgs 84 "west south east north"
     #   outputs an overpy result object
     @classmethod
-    def tagGet(cls, geom:str, tags:dict, bbox:str, printquery = False) -> overpy.Result:
-        """
-        Formats and sends a query to overpass with overpy and returns the result. 
-
-        param val:
-            geom: enum node|way|rel|nw|nr|wr|nwr
-            tags: dictionary containging the key-value pairs to be queried
-            bbox: a string of coordinates in format "(west,south,east,north)" in wgs84 coordinates
-            printquery: True will print the querystring sent to overpy. 
-        ret val: 
-            the result from overpass as an overpy.Result object.
-        """
-
+    def tagGet(cls, geom, tags, bbox):
         queryString = '''
         [out:json][bbox:{}];
         {};
         (._;>;);
         out;
         '''.format(bbox, cls.__unionTags(geom, tags))
-        if printquery:
-            print(queryString)
         while True:
             try:
                 print("querying OSM", end="\r")
@@ -64,16 +50,13 @@ class Query:
         return res
 
     @classmethod
-    def bboxGet(cls, bbox:str, printquery = False):
+    def bboxGet(cls, bbox):
         queryString = '''
         [out:json];
         nwr({});
         (._;>;);
         out;
         '''.format(bbox)
-
-        if printquery:
-            print(queryString)
 
         while True:
             try:

@@ -153,6 +153,3 @@ cython_debug/
 
 # Mac OS stuff
 *.DS_store
-
-# Test output files
-outLayers/

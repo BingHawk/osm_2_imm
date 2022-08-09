@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/leonard/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/osm_2_imm/ui/osm_2_imm_dialog_base.ui'
+# Form implementation generated from reading ui file '/Users/leonard/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/osm_2_imm/osm_2_imm_dialog_base.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
