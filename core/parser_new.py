@@ -7,9 +7,8 @@ try:
     from ..settings.config import Config
 except ValueError:
     from settings.config import Config
-from .query import Query
-
-import time
+except ImportError:
+    from settings.config import Config
 
 ## set upp ##
 

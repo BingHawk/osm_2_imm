@@ -1,3 +1,4 @@
-from core.runner import main
+from core.runner import main, test
 
-main(None, test = True)
+# main()
+test()

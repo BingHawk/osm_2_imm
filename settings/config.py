@@ -7,7 +7,7 @@ from . import static
 class Config:
     sortedTags={} # dictionary that contains exactly one key for every osm key to be called and the list of osm values to that key as value
     reversedTags={}
-    features=[]
+    features=[] #list of the different layers. ex. voidGreyAreas or networkStreet
     __configurationFilePath = 'configuration.json'
     __bufferingSettingsFilePath = 'bufferingSettings.json'
     __polygon_featuresFilePath = 'polygon-features.json'
@@ -46,8 +46,8 @@ class Config:
         self.networkBikeRacks = self.configJson["networkBikeRacks"]
         self.networkParkings = self.configJson["networkParkings"]
         self.networkTaxi = self.configJson["networkTaxi"]
-        self.networkPTLines = self.configJson["networkPTLines"]
-        self.networkPTStops = self.configJson["networkPTStops"]
+        self.networkPTLines = self.configJson["networkPtLines"]
+        self.networkPTStops = self.configJson["networkPtStops"]
         self.usesActivities = self.configJson["usesActivities"]
         self.usesLanduse = self.configJson["usesLanduse"]
         self.usesServices = self.configJson["usesServices"]
