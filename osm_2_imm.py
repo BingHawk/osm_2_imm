@@ -21,18 +21,20 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
-from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QUrl
+from qgis.PyQt.QtGui import QIcon, QDesktopServices
 from qgis.PyQt.QtWidgets import QAction, QMessageBox
 
 from qgis.core import (QgsProject)
 
-# Initialize Qt resources from file resources.py
-from .resources import *
-# Import the code for the dialog
-from .osm_2_imm_dialog import MainDialog
 import os.path
-from .runner import *
+
+# Initialize Qt resources from file resources.py
+from .ui.resources import *
+# Import the code for the dialog
+from .ui.osm_2_imm_dialog import MainDialog
+from .core.runner import *
+# from utils.tools import get_setting, set_setting
 
 
 class Main:
@@ -163,7 +165,7 @@ class Main:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/osm_2_imm/icon.png'
+        icon_path = ':/plugins/osm_2_imm/ui/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'OSM to IMM'),
@@ -182,7 +184,24 @@ class Main:
                 action)
             self.iface.removeToolBarIcon(action)
 
+    def licenceDialog(self):
+        licenseMessage =  '''OpenStreetMap® is open data, licensed under the Open Data Commons Open Database License (ODbL) by the OpenStreetMap Foundation. 
+            The Foundation requires that you use the credit “© OpenStreetMap contributors” on any product using OSM data.
+            You should read https://www.openstreetmap.org/copyright'''
 
+        msgBox = QMessageBox()
+        msgBox.setText(licenseMessage)
+        readMoreBtn = msgBox.addButton(self.tr("Read more..."), QMessageBox.ActionRole)
+        acceptBtn = msgBox.addButton(self.tr("Open OSM to IMM"), QMessageBox.AcceptRole)
+        msgBox.setDefaultButton(acceptBtn)
+        msgBox.exec()
+
+        if msgBox.clickedButton() == readMoreBtn:
+            desktop_service = QDesktopServices()
+            desktop_service.openUrl(QUrl('http://www.openstreetmap.org/copyright'))
+
+        return msgBox
+    
     def run(self):
         """Run method that performs all the real work"""
 
@@ -190,6 +209,9 @@ class Main:
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
+
+            self.licenceDialog()
+
             self.dlg = MainDialog()
 
         project = QgsProject.instance()
@@ -218,8 +240,10 @@ class Main:
                          "Choose a way to input bounding box\nExiting...")
                 return
 
-            outLoc = self.dlg.outputLoc.filePath()
-            main(bbox, project, outLoc)
+            # outLoc = self.dlg.outputLoc.filePath()
+            # main(bbox, outLoc)
+            qgsMain(project, bbox)
+
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass

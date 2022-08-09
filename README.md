@@ -9,7 +9,7 @@ Make sure geopandas is installed in the qgis python installation. (see below)
 Fork this repository to the following folder. 
 - Linux: ~/.local/share/QGIS/QGIS3/profiles/default/python/plugins
 - Windows: C:\Users\USER\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins
-- Mac OS: Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins
+- Mac OS: ~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins
 
 Restart QGIS, go to the plugin browser and serach for "OSM to IMM". 
 
