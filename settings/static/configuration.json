@@ -732,14 +732,14 @@
     },
     "outputTags": [
       "building",
-      "building:level",
+      "building:levels",
       "building:height",
       "building:use"
     ]
   },
   "bbox": {
     "bbox_xxlarge": "45.2, 9, 45.7, 9.5",
-    "bbox_xlarge": "45.43, 9.13, 45.51, 9.26",
+    "bbox_xlarge": "45.43, 9.14, 45.53, 9.24",
     "bbox_large": "45.45, 9.2, 45.5, 9.25",
     "bbox_std": "45.47692, 9.22551, 45.47945, 9.23028",
     "bbox_small": "45.47892, 9.22551, 45.47945, 9.22628",

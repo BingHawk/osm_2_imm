@@ -6,10 +6,6 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning) #Suppresses future warnings
 
 from qgis.core import QgsProject, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsVectorLayer
-try:
-    import processing
-except ModuleNotFoundError:
-    pass
 
 try:
     from ..settings.config import Config
@@ -94,7 +90,7 @@ def transformQLayer(qLayer:QgsVectorLayer, crsSrc:QgsCoordinateReferenceSystem, 
         vl = QgsVectorLayer("linestring", "grey_areas","memory")
     elif qLayer.wkbType() == 3:
         vl = QgsVectorLayer("polygon", "grey_areas","memory")
-        
+
     vl.setCrs(crsDest)
     pr = vl.dataProvider()
     pr.addAttributes(columns)
@@ -116,14 +112,6 @@ def qgsMain(project: QgsProject, bbox:str = None, ):
 
     buffered = qBuffer(voidGreyAreasTranformed, CONFIG.bufferSettings['voidGreyAreas'])
     buffered = transformQLayer(buffered, crsProj, crsOsm, project)
-
-    # parameterProject = {'INPUT': layers['voidGreyAreas'], 'TARGET_CRS': CONFIG.projectedCrs,
-    #              'OUTPUT': 'memory:grey_areas_buffered'}
-    # reprojected = processing.run('native:reprojectlayer', parameterProject)
-
-    # buffered = qBuffer(reprojected['OUTPUT'], CONFIG.bufferSettings['voidGreyAreas'])
-
-
 
     layers['voidGreyAreas'] = buffered
 
@@ -195,13 +183,13 @@ def test():
     #                     printquery=True)
 
     """ Tests relations containng polygons"""
-    # res = Query.tagGet('rel',
-    #                     CONFIG.volumeBuildings['inputTags'],
-    #                     CONFIG.bbox_M,
-    #                     printquery=True)
+    res = Query.tagGet('rel',
+                        CONFIG.volumeBuildings['inputTags'],
+                        CONFIG.bbox_M,
+                        printquery=True)
 
     """ Tests everything in the bbox"""
-    res = Query.bboxGet(CONFIG.bbox_M, printquery=True)
+    # res = Query.bboxGet(CONFIG.bbox_M, printquery=True)
 
     print("")
 
@@ -216,11 +204,6 @@ def test():
     crsProj = QgsCoordinateReferenceSystem(CONFIG.projectedCrs)
 
     voidGreyAreasTranformed = transformQLayer(layers['voidGreyAreas'], crsOsm, crsProj, project)
-
-    # for f in voidGreyAreasTranformed.getFeatures():
-    #     if f.id() > 493:
-    #         print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
-
     buffered = qBuffer(voidGreyAreasTranformed, CONFIG.bufferSettings['voidGreyAreas'])
 
     for f in buffered.getFeatures():
@@ -230,9 +213,7 @@ def test():
     bufferedtransformed = transformQLayer(buffered, crsProj, crsOsm,  project)
     print("tranformed back")
 
-    print(bufferedtransformed.isValid())
     for f in bufferedtransformed.getFeatures():
-        print(f.id())
         if f.id() > 493:
             print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
 
