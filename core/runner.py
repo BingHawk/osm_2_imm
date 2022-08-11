@@ -5,7 +5,13 @@ import sys
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning) #Suppresses future warnings
 
-from qgis.core import QgsProject, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsVectorLayer
+from qgis.core import (QgsProject,
+                    QgsCoordinateReferenceSystem,
+                    QgsCoordinateTransform,
+                    QgsVectorLayer,
+                    QgsLayerTreeGroup,
+                    QgsVectorFileWriter
+                    )
 
 try:
     from ..settings.config import Config
@@ -14,71 +20,22 @@ except ValueError:
 except ImportError:
     from settings.config import Config
 from .query import Query
-from .parser_new import parse, buffer
-from .parser_qgis import parse as qParse, buffer as qBuffer
+from .parser_qgis import Parser
 
 from .utilities.tools import camelCaseSplit
-
 
 import time
 
 CONFIG = Config()
+PARSER = Parser(CONFIG)
 
-
-# write outputs a geodataframe as a geopackage file with the specified filename in a folder decided by CONFIG.outputFolder.
-# gdf - the GeoGataFrame to be output
-# filename:string - the decired filename for the output file. 
-# layer - String. The name of layer the file should be output to. 
-def qWrite(gdf, outLoc, filename, layer):
-
-    if gdf is None: 
-        print('nothing to write to layer "{}" of file "{}"'.format(layer,filename))
-        pass
-    else:        
-        if gdf.crs != CONFIG.outputCrs:
-            gdf.to_crs(CONFIG.outputCrs)
-
-        fullpath = outLoc + "/" + filename + '.gpkg'
-
-        if os.path.isfile(fullpath):
-            print("file already exsist, edditing",fullpath)
-            pass
-        gdf.to_file(fullpath, driver='GPKG', layer=layer)
-
-        print('Layer written: "{}" written to "{}"'.format(layer,fullpath))
-
-def write(gdf, filename, layer):
-
-    if gdf is None: 
-        print('nothing to write to layer "{}" of file "{}"'.format(layer,filename))
-        pass
-    else:        
-        if gdf.crs != CONFIG.outputCrs:
-            gdf.to_crs(CONFIG.outputCrs)
-
-        currentFolder = os.path.abspath(os.path.dirname(sys.argv[0]))
-        savefolder = currentFolder+"/"+"outLayers"
-        if not os.path.isdir(savefolder):
-            os.mkdir(savefolder)
-        fullpath = savefolder + "/" + filename + '.gpkg'
-
-        if os.path.isfile(fullpath):
-            print("file already exsist, edditing",fullpath)
-            pass
-        gdf.to_file(fullpath, driver='GPKG', layer=layer)
-
-        print('Layer written: "{}" written to "{}"'.format(layer,fullpath))
-
-def transformQLayer(qLayer:QgsVectorLayer, crsSrc:QgsCoordinateReferenceSystem, crsDest:QgsCoordinateReferenceSystem, project:QgsProject, backward:bool = False) -> QgsVectorLayer:
+def transformQLayer(qLayer:QgsVectorLayer, crsSrc:QgsCoordinateReferenceSystem, crsDest:QgsCoordinateReferenceSystem, project:QgsProject) -> QgsVectorLayer:
     transformContext = project.transformContext()
     xform = QgsCoordinateTransform(crsSrc, crsDest, transformContext)
     feats = []
     for f in qLayer.getFeatures():
         g = f.geometry()
-        if backward:
-            g.transform(xform, QgsCoordinateTransform.BackwardTransform)
-        else:
-            g.transform(xform)
+        g.transform(xform)
         f.setGeometry(g)
         feats.append(f)
 
@@ -99,63 +56,47 @@ def transformQLayer(qLayer:QgsVectorLayer, crsSrc:QgsCoordinateReferenceSystem, 
 
     return vl
 
-def qgsMain(project: QgsProject, bbox:str = None, ):
+def qgsMain(project: QgsProject, bbox:str = None, outLoc = None ):
     if bbox is None:
         bbox = CONFIG.bbox_M
     res = Query.bboxGet(bbox)
 
-    layers = qParse(res)
+    layers = PARSER.parse(res)
 
     crsOsm = QgsCoordinateReferenceSystem("EPSG:4326")
     crsProj = QgsCoordinateReferenceSystem(CONFIG.projectedCrs) 
     voidGreyAreasTranformed = transformQLayer(layers['voidGreyAreas'], crsOsm, crsProj, project)
 
-    buffered = qBuffer(voidGreyAreasTranformed, CONFIG.bufferSettings['voidGreyAreas'])
+    buffered = PARSER.buffer(voidGreyAreasTranformed, CONFIG.bufferSettings['voidGreyAreas'])
     buffered = transformQLayer(buffered, crsProj, crsOsm, project)
 
     layers['voidGreyAreas'] = buffered
 
-    for feature in layers.keys():
-        qVectorLayer = layers[feature] 
-        project.addMapLayer(qVectorLayer)
+    groupMap = {}
+    for feature in CONFIG.features:
+        name = camelCaseSplit(feature)
+        groupName = name[0].lower()
 
-def main(bbox=None, outLoc=None):
-    tic = time.time()
-    if bbox is None:
-        bbox = CONFIG.bbox_M
-    qTic = time.time()
-    res = Query.bboxGet(bbox)
-    qToc = time.time()
-    qTime = qToc - qTic
+        if groupName in groupMap:
+            groupMap[groupName].append(feature)
+        else:
+            groupMap[groupName] = [feature]
 
-    all = parse(res)
-
-    for key in all.keys():
-        words = camelCaseSplit(key)
-        filename = words[0]
-        layer = '_'.join(words[1:]).lower()
-
-        if key == 'usesActivities' or key == 'usesServices' or key == 'boundariesAdministrative':
-            if all[key] is not None:
-                all[key]['geometry'] = all[key].centroid
-        
-        if key == 'voidGreyAreas':
-            if all[key] is not None:
-                all[key] = buffer(all[key], CONFIG.bufferSettings['voidGreyAreas'])
-
-        if outLoc is None:
-            write(all[key],filename,layer)
-        else: 
-            qWrite(all[key],outLoc,filename,layer)
-
-    toc = time.time()
-
-    print("Done in {} seconds.".format(toc-tic))
-    print(
-        """Query time: {} 
-        """.format(qTime))
-
+    root = project.layerTreeRoot()
     
+    for group in groupMap.keys():
+        g = root.addGroup(group) 
+        for feature in groupMap[group]:
+            qVectorLayer = layers[feature]
+            project.addMapLayer(qVectorLayer, False)
+            g.addLayer(qVectorLayer)
+
+        if outLoc != None:
+            fullpath = outLoc + group
+            save_options = QgsVectorFileWriter.SaveVectorOptions()
+            save_options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
+            err = QgsVectorFileWriter.writeAsVectorFormat(qVectorLayer, fullpath, save_options)
+            pass
 
 
 
@@ -183,48 +124,43 @@ def test():
     #                     printquery=True)
 
     """ Tests relations containng polygons"""
-    res = Query.tagGet('rel',
-                        CONFIG.volumeBuildings['inputTags'],
-                        CONFIG.bbox_M,
-                        printquery=True)
+    # res = Query.tagGet('rel',
+    #                     CONFIG.volumeBuildings['inputTags'],
+    #                     CONFIG.bbox_M,
+    #                     printquery=True)
 
     """ Tests everything in the bbox"""
-    # res = Query.bboxGet(CONFIG.bbox_M, printquery=True)
+    res = Query.bboxGet(CONFIG.bbox_M, printquery=True)
 
     print("")
 
     qToc = time.time()
     qTime = qToc - qTic
+    layers = PARSER.parse(res)
 
-    layers = qParse(res)
+    project = QgsProject.instance()
 
-    project = QgsProject().instance()
-    
     crsOsm = QgsCoordinateReferenceSystem("EPSG:4326")
-    crsProj = QgsCoordinateReferenceSystem(CONFIG.projectedCrs)
-
+    crsProj = QgsCoordinateReferenceSystem(CONFIG.projectedCrs) 
     voidGreyAreasTranformed = transformQLayer(layers['voidGreyAreas'], crsOsm, crsProj, project)
-    buffered = qBuffer(voidGreyAreasTranformed, CONFIG.bufferSettings['voidGreyAreas'])
 
-    for f in buffered.getFeatures():
-        if f.id() > 493:
-            print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
+    buffered = PARSER.buffer(voidGreyAreasTranformed, CONFIG.bufferSettings['voidGreyAreas'])
+    buffered = transformQLayer(buffered, crsProj, crsOsm, project)
 
-    bufferedtransformed = transformQLayer(buffered, crsProj, crsOsm,  project)
-    print("tranformed back")
+    layers['voidGreyAreas'] = buffered
 
-    for f in bufferedtransformed.getFeatures():
-        if f.id() > 493:
-            print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
+    groupMap = {}
+    for feature in CONFIG.features:
+        name = camelCaseSplit(feature)
+        groupName = name[0].lower()
 
-
+        if groupName in groupMap.keys():
+            groupMap[groupName].append(feature)
+        else:
+            groupMap[groupName] = [feature]
         
 
-    # voidGreyAreasBuffered = qBuffer(parsed['voidGreyAreas'], CONFIG.bufferSettings['voidGreyAreas'])
-    # for f in voidGreyAreasBuffered.getFeatures():
-    #             print("")
-    #             print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
-
+    print(groupMap)
 
     toc = time.time()
 
@@ -248,6 +184,6 @@ def test():
 # _______ Main program calls ______
 # main(CONFIG.bbox_S_D) # Run this line for Dakar 
 if __name__ == "__main__":
-    main() # Run this line for Milano
+    test() # Run this line for Milano
 
 # %%
