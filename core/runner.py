@@ -56,9 +56,8 @@ def transformQLayer(qLayer:QgsVectorLayer, crsSrc:QgsCoordinateReferenceSystem, 
 
     return vl
 
-def qgsMain(project: QgsProject, bbox:str = None, outLoc = None ):
-    if bbox is None:
-        bbox = CONFIG.bbox_M
+def qgsMain(project: QgsProject = QgsProject.instance(), bbox:str = CONFIG.bbox_M, outLoc = None ):
+        
     res = Query.bboxGet(bbox)
 
     layers = PARSER.parse(res)
@@ -91,12 +90,16 @@ def qgsMain(project: QgsProject, bbox:str = None, outLoc = None ):
             project.addMapLayer(qVectorLayer, False)
             g.addLayer(qVectorLayer)
 
-        if outLoc != None:
-            fullpath = outLoc + group
-            save_options = QgsVectorFileWriter.SaveVectorOptions()
-            save_options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
-            err = QgsVectorFileWriter.writeAsVectorFormat(qVectorLayer, fullpath, save_options)
-            pass
+            if outLoc != None:
+                outName = feature+'.gpkg'
+                gpkg_path = os.path.join(outLoc,outName) #Mac speciffic??
+                saveOptions = QgsVectorFileWriter.SaveVectorOptions()
+                # if os.path.exists(gpkg_path): #Denna returnerar alltid False. :()
+                saveOptions.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteFile
+
+                saveOptions.driverName = "GPKG"
+                err = QgsVectorFileWriter.writeAsVectorFormatV2(qVectorLayer, gpkg_path, project.transformContext(), saveOptions)
+                print(err)
 
 
 
