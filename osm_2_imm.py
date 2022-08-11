@@ -240,9 +240,8 @@ class Main:
                          "Choose a way to input bounding box\nExiting...")
                 return
 
-            # outLoc = self.dlg.outputLoc.filePath()
-            # main(bbox, outLoc)
-            qgsMain(project, bbox)
+            outLoc = self.dlg.outputLoc.filePath()
+            qgsMain(project, bbox, outLoc)
 
             # Do something useful here - delete the line containing pass and
             # substitute with your code.

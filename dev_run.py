@@ -1,4 +1,3 @@
-from core.runner import main, test
+from core.runner import qgsMain, test
 
-# main()
 test()
