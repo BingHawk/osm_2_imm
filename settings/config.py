@@ -5,14 +5,14 @@ import json
 from . import static
 
 class Config:
-    sortedTags={} # dictionary that contains exactly one key for every osm key to be called and the list of osm values to that key as value
-    reversedTags={}
-    features=[] #list of the different layers. ex. voidGreyAreas or networkStreet
-    __configurationFilePath = 'configuration.json'
-    __bufferingSettingsFilePath = 'bufferingSettings.json'
-    __polygon_featuresFilePath = 'polygon-features.json'
-
     def __init__(self):
+        self.sortedTags={} # dictionary that contains exactly one key for every osm key to be called and the list of osm values to that key as value
+        self.reversedTags={}
+        self.features=[] #list of the different layers. ex. voidGreyAreas or networkStreet
+        self.__configurationFilePath = 'configuration.json'
+        self.__bufferingSettingsFilePath = 'bufferingSettings.json'
+        self.__polygon_featuresFilePath = 'polygon-features.json'
+
         with importlib.resources.open_text(static, self.__configurationFilePath) as file:
             self.configJson = json.load(file)
 
@@ -69,11 +69,13 @@ class Config:
                             self.reversedTags[key].append(feature)
                     else: 
                         self.reversedTags[key] = [feature]
-                self.features.append(feature)
             except KeyError: # For entrances in the config that is not features and thus lack 'inputTags' field
                 continue
             except TypeError: # For entrances that does not have aditional levels of dictionaries
                 continue
+        
+            self.features.append(feature)
+
 
     # Sorting tags and placing them in sorted tags.
     def __sortTags(self):
