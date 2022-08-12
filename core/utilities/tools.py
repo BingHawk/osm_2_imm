@@ -1,3 +1,5 @@
+from qgis.core import QgsRectangle
+
 def camelCaseSplit(str):
     """
     Split a string into list on camel case. 
@@ -16,3 +18,9 @@ def camelCaseSplit(str):
  
     start_idx = [0] + start_idx
     return [str[x: y] for x, y in zip(start_idx, start_idx[1:])]
+
+def getOsmBboxString(qRect: QgsRectangle) -> str:
+    """
+    converts a QgsRectangle into a String usable for querying OSM
+    """
+    return qRect.toString().replace(" : ", ",")

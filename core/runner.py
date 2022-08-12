@@ -10,7 +10,8 @@ from qgis.core import (QgsProject,
                     QgsCoordinateTransform,
                     QgsVectorLayer,
                     QgsLayerTreeGroup,
-                    QgsVectorFileWriter
+                    QgsVectorFileWriter,
+                    QgsRectangle
                     )
 
 try:
@@ -22,7 +23,7 @@ except ImportError:
 from .query import Query
 from .parser_qgis import Parser
 
-from .utilities.tools import camelCaseSplit
+from .utilities.tools import camelCaseSplit, getOsmBboxString
 
 import time
 
@@ -135,6 +136,7 @@ def test():
     """ Tests everything in the bbox"""
     res = Query.bboxGet(CONFIG.bbox_M, printquery=True)
 
+
     print("")
 
     qToc = time.time()
@@ -162,8 +164,6 @@ def test():
         else:
             groupMap[groupName] = [feature]
         
-
-    print(groupMap)
 
     toc = time.time()
 

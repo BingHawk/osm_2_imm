@@ -1,6 +1,7 @@
 # Imports the configuration file and populatates an object of the config class
 import importlib.resources
 import json
+from qgis.core import QgsRectangle
 
 from . import static
 
@@ -29,14 +30,14 @@ class Config:
         self.outputCrs = self.configJson["crs"]["output"]
 
         # adding the bboxs for testing on smaller area. 
-        self.bbox_XXL = self.configJson['bbox']['bbox_xxlarge']
-        self.bbox_XL = self.configJson['bbox']['bbox_xlarge']
-        self.bbox_L = self.configJson['bbox']['bbox_large']
-        self.bbox_M = self.configJson['bbox']['bbox_std']
-        self.bbox_S = self.configJson['bbox']['bbox_small']
-        self.bbox_XL_D = self.configJson['bbox']['bbox_xlarge_dakar']
-        self.bbox_L_D = self.configJson['bbox']['bbox_large_dakar']
-        self.bbox_M_D = self.configJson['bbox']['bbox_std_dakar']
+        self.bbox_XXL = self.__createQgsRectangle(self.configJson['bbox']['bbox_xxlarge'])
+        self.bbox_XL = self.__createQgsRectangle(self.configJson['bbox']['bbox_xlarge'])
+        self.bbox_L = self.__createQgsRectangle(self.configJson['bbox']['bbox_large'])
+        self.bbox_M = self.__createQgsRectangle(self.configJson['bbox']['bbox_std'])
+        self.bbox_S = self.__createQgsRectangle(self.configJson['bbox']['bbox_small'])
+        self.bbox_XL_D = self.__createQgsRectangle(self.configJson['bbox']['bbox_xlarge_dakar'])
+        self.bbox_L_D = self.__createQgsRectangle(self.configJson['bbox']['bbox_large_dakar'])
+        self.bbox_M_D = self.__createQgsRectangle(self.configJson['bbox']['bbox_std_dakar'])
 
         # Adding the features as attributes of the config object
         # TODO: make dynamic so user can specify wanted attributes. 
@@ -59,6 +60,10 @@ class Config:
         self.voidGreyAreas = self.configJson["voidGreyAreas"]
         self.voidTrees = self.configJson["voidTrees"]
         self.volumeBuildings = self.configJson["volumeBuildings"]
+
+    def __createQgsRectangle(self, coordString:str) -> QgsRectangle:
+        coords = map(lambda x: float(x), coordString.split(","))
+        return QgsRectangle(*coords)
 
     def __reverseTags(self):
         for feature in self.configJson.keys():

@@ -222,13 +222,13 @@ class Main:
         # See if OK was pressed
         if result:
             if self.dlg.rb_limits.isChecked():
-                south = self.dlg.south.value()
-                west = self.dlg.west.value()
-                north = self.dlg.north.value()
-                east = self.dlg.east.value()
+                south = self.dlg.south.value().replace(",",".")
+                west = self.dlg.west.value().replace(",",".")
+                north = self.dlg.north.value().replace(",",".")
+                east = self.dlg.east.value().replace(",",".")
 
                 # TODO: input validation. 
-                bbox = south + ", " + west + ", " + north + ", " + east
+                bbox = QgsRectangle(south, west, north, east)
             elif self.dlg.rb_layer.isChecked():
                 layer = self.dlg.layer.currentLayer()
                 rectangle = layer.extent()

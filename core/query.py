@@ -1,6 +1,8 @@
 import overpy
 import time
 
+from .utilities.tools import getOsmBboxString
+
 class Query:
     API = overpy.Overpass()
     # Takes one or more list of tags as key = [values] or as a dictionary with {key = [values]} and returns a string to be used in Overpass QL query.
@@ -45,7 +47,7 @@ class Query:
         {};
         (._;>;);
         out;
-        '''.format(bbox, cls.__unionTags(geom, tags))
+        '''.format(getOsmBboxString(bbox), cls.__unionTags(geom, tags))
         if printquery:
             print(queryString)
         while True:
@@ -70,7 +72,7 @@ class Query:
         nwr({});
         (._;>;);
         out;
-        '''.format(bbox)
+        '''.format(getOsmBboxString(bbox))
 
         if printquery:
             print(queryString)
