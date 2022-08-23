@@ -201,7 +201,7 @@ class Main:
             desktop_service.openUrl(QUrl('http://www.openstreetmap.org/copyright'))
 
         return msgBox
-    
+
     def run(self):
         """Run method that performs all the real work"""
 
@@ -222,18 +222,16 @@ class Main:
         # See if OK was pressed
         if result:
             if self.dlg.rb_limits.isChecked():
-                south = self.dlg.south.value()
-                west = self.dlg.west.value()
-                north = self.dlg.north.value()
-                east = self.dlg.east.value()
+                south = float(self.dlg.south.value().replace(",","."))
+                west = float(self.dlg.west.value().replace(",","."))
+                north = float(self.dlg.north.value().replace(",","."))
+                east = float(self.dlg.east.value().replace(",","."))
+                # bbox = QgsRectangle(south, west, north, east)
+                bbox = QgsRectangle(west, south, east, north)
 
-                # TODO: input validation. 
-                bbox = south + ", " + west + ", " + north + ", " + east
             elif self.dlg.rb_layer.isChecked():
                 layer = self.dlg.layer.currentLayer()
-                rectangle = layer.extent()
-
-                bbox = str(rectangle.yMinimum()) + ", " + str(rectangle.xMinimum()) + ", " + str(rectangle.yMaximum()) + ", " + str(rectangle.xMaximum())
+                bbox = layer.extent()
             else: 
                 QMessageBox.critical(self.iface.mainWindow(),
                          'OSM to IMM error',
@@ -241,9 +239,12 @@ class Main:
                 return
 
             outLoc = self.dlg.outputLoc.filePath()
+
+
+            QMessageBox.information(self.iface.mainWindow(),
+                         'some error here',
+                         bbox.toString()+str(project)+str(outLoc))
+
             qgsMain(project, bbox, outLoc)
 
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass
 

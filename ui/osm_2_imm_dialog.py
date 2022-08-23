@@ -27,6 +27,8 @@ import os
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 
+from qgis.core import QgsRectangle
+
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'osm_2_imm_dialog_base.ui'))
@@ -42,3 +44,61 @@ class MainDialog(QtWidgets.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+
+    def accept(self) -> None:
+        validInput = self.checkInput()
+        if validInput:
+            self.done( 1 ) 
+
+
+    def checkInput(self) -> bool:
+        goVal = True
+        if self.rb_limits.isChecked():
+            try:
+                south = float(self.south.value().replace(",","."))
+                west = float(self.west.value().replace(",","."))
+                north = float(self.north.value().replace(",","."))
+                east = float(self.east.value().replace(",","."))
+                bbox = QgsRectangle(south, west, north, east)
+                area = bbox.area()
+
+            except ValueError:
+                ErrorMessage = """Incorrect input. 
+                Must be only digits with comma or dot decimal seperator and no spaces.
+                """
+                msgBox = QtWidgets.QMessageBox()
+                msgBox.setIcon(QtWidgets.QMessageBox.Critical)
+                msgBox.addButton(QtWidgets.QMessageBox.Ok)
+                msgBox.setWindowTitle("Input Error")
+                msgBox.setText(ErrorMessage)
+                msgBox.exec()
+                goVal = False
+                area = 0
+        elif self.rb_layer.isChecked():
+            layer = self.layer.currentLayer()
+            bbox = layer.extent()
+            area = bbox.area()
+
+        if area > 0.0025:
+            areaMessage = f"""The area is to large, sorry."""
+            msgBox = QtWidgets.QMessageBox()
+            msgBox.setIcon(QtWidgets.QMessageBox.Critical)
+            msgBox.addButton(QtWidgets.QMessageBox.Ok)
+            msgBox.setWindowTitle("Area message")
+            msgBox.setText(areaMessage)
+            msgBox.exec()
+            goVal = False
+        elif area > 0.0001:
+            areaMessage = f"""The area is to quite large, this might take a while."""
+            msgBox = QtWidgets.QMessageBox()
+            msgBox.setIcon(QtWidgets.QMessageBox.Warning)
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+            msgBox.setWindowTitle("Area warning")
+            msgBox.setText(areaMessage)
+            retVal = msgBox.exec()
+
+            if retVal == QtWidgets.QMessageBox.Cancel:
+                goVal = False
+
+        return goVal
+
