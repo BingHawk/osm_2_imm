@@ -81,16 +81,23 @@ class Ui_MainDialogBase(object):
         self.horizontalLayout_4.addWidget(self.west)
         self.gridLayout.addLayout(self.horizontalLayout_4, 1, 0, 1, 1)
         self.verticalLayout.addLayout(self.gridLayout)
+        self.save_file = QtWidgets.QCheckBox(self.verticalLayoutWidget)
+        self.save_file.setObjectName("save_file")
+        self.verticalLayout.addWidget(self.save_file)
         self.label_5 = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.label_5.setEnabled(False)
         self.label_5.setObjectName("label_5")
         self.verticalLayout.addWidget(self.label_5)
         self.outputLoc = gui.QgsFileWidget(self.verticalLayoutWidget)
+        self.outputLoc.setEnabled(False)
         self.outputLoc.setObjectName("outputLoc")
         self.verticalLayout.addWidget(self.outputLoc)
 
         self.retranslateUi(MainDialogBase)
         self.button_box.accepted.connect(MainDialogBase.accept)
         self.button_box.rejected.connect(MainDialogBase.reject)
+        self.save_file.toggled['bool'].connect(self.label_5.setEnabled)
+        self.save_file.toggled['bool'].connect(self.outputLoc.setEnabled)
         QtCore.QMetaObject.connectSlotsByName(MainDialogBase)
 
     def retranslateUi(self, MainDialogBase):
@@ -106,5 +113,6 @@ class Ui_MainDialogBase(object):
         self.east.setPlaceholderText(_translate("MainDialogBase", "East bounds (lon)"))
         self.label_3.setText(_translate("MainDialogBase", "West:"))
         self.west.setPlaceholderText(_translate("MainDialogBase", "West bounds (lon)"))
+        self.save_file.setText(_translate("MainDialogBase", "Save to file"))
         self.label_5.setText(_translate("MainDialogBase", "Output location: "))
 from qgis import gui
