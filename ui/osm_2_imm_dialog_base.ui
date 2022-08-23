@@ -34,21 +34,38 @@
     <rect>
      <x>40</x>
      <y>30</y>
-     <width>291</width>
+     <width>297</width>
      <height>280</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QRadioButton" name="rb_layer">
+      <property name="text">
+       <string>Bounding box from layer:</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QgsMapLayerComboBox" name="layer">
+      <property name="showCrs" stdset="0">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
     <item>
      <widget class="QRadioButton" name="rb_limits">
       <property name="inputMethodHints">
        <set>Qt::ImhDigitsOnly</set>
       </property>
       <property name="text">
-       <string>Input bounding box limits:</string>
+       <string>Input bounding box limits (WGS 84 lon/lat):</string>
       </property>
       <property name="checked">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
      </widget>
     </item>
@@ -141,20 +158,6 @@
      </layout>
     </item>
     <item>
-     <widget class="QRadioButton" name="rb_layer">
-      <property name="text">
-       <string>Bounding box from layer:</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QgsMapLayerComboBox" name="layer">
-      <property name="showCrs">
-       <bool>false</bool>
-      </property>
-     </widget>
-    </item>
-    <item>
      <widget class="QLabel" name="label_5">
       <property name="text">
        <string>Output location: </string>
@@ -162,11 +165,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QgsFileWidget" name="outputLoc">
-      <property name="storageMode">
-       <enum>QgsFileWidget::GetDirectory</enum>
-      </property>
-     </widget>
+     <widget class="QgsFileWidget" name="outputLoc" native="true"/>
     </item>
    </layout>
   </widget>

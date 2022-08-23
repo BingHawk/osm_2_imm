@@ -226,7 +226,9 @@ class Main:
                 west = float(self.dlg.west.value().replace(",","."))
                 north = float(self.dlg.north.value().replace(",","."))
                 east = float(self.dlg.east.value().replace(",","."))
-                bbox = QgsRectangle(south, west, north, east)
+                # bbox = QgsRectangle(south, west, north, east)
+                bbox = QgsRectangle(west, south, east, north)
+
             elif self.dlg.rb_layer.isChecked():
                 layer = self.dlg.layer.currentLayer()
                 bbox = layer.extent()
@@ -237,9 +239,12 @@ class Main:
                 return
 
             outLoc = self.dlg.outputLoc.filePath()
+
+
+            QMessageBox.information(self.iface.mainWindow(),
+                         'some error here',
+                         bbox.toString()+str(project)+str(outLoc))
+
             qgsMain(project, bbox, outLoc)
 
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass
 

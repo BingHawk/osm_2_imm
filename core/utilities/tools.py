@@ -23,4 +23,5 @@ def getOsmBboxString(qRect: QgsRectangle) -> str:
     """
     converts a QgsRectangle into a String usable for querying OSM
     """
-    return qRect.toString().replace(" : ", ",")
+    out = f"{qRect.yMinimum()},{qRect.xMinimum()},{qRect.yMaximum()},{qRect.xMaximum()}"
+    return out

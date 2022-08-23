@@ -60,6 +60,7 @@ class MainDialog(QtWidgets.QDialog, FORM_CLASS):
                 north = float(self.north.value().replace(",","."))
                 east = float(self.east.value().replace(",","."))
                 bbox = QgsRectangle(south, west, north, east)
+                area = bbox.area()
 
             except ValueError:
                 ErrorMessage = """Incorrect input. 
@@ -72,18 +73,11 @@ class MainDialog(QtWidgets.QDialog, FORM_CLASS):
                 msgBox.setText(ErrorMessage)
                 msgBox.exec()
                 goVal = False
+                area = 0
         elif self.rb_layer.isChecked():
             layer = self.layer.currentLayer()
             bbox = layer.extent()
-        
-        def handleAreaClick(event):
-            if event.text == "OK":
-                goVal = True
-            elif event.text == "Cancel":
-                goVal = False
-
-        area = bbox.area()
-
+            area = bbox.area()
 
         if area > 0.0025:
             areaMessage = f"""The area is to large, sorry."""
@@ -101,8 +95,10 @@ class MainDialog(QtWidgets.QDialog, FORM_CLASS):
             msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
             msgBox.setWindowTitle("Area warning")
             msgBox.setText(areaMessage)
-            msgBox.buttonClicked.connect(handleAreaClick)
-            msgBox.exec()
+            retVal = msgBox.exec()
+
+            if retVal == QtWidgets.QMessageBox.Cancel:
+                goVal = False
 
         return goVal
 

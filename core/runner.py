@@ -57,7 +57,7 @@ def transformQLayer(qLayer:QgsVectorLayer, crsSrc:QgsCoordinateReferenceSystem, 
 
     return vl
 
-def qgsMain(project: QgsProject = QgsProject.instance(), bbox:str = CONFIG.bbox_M, outLoc = None ):
+def qgsMain(project: QgsProject = QgsProject.instance(), bbox:QgsRectangle = CONFIG.bbox_M, outLoc = None ):
         
     res = Query.bboxGet(bbox)
 
