@@ -158,14 +158,28 @@
      </layout>
     </item>
     <item>
+     <widget class="QCheckBox" name="save_file">
+      <property name="text">
+       <string>Save to file</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLabel" name="label_5">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="text">
        <string>Output location: </string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QgsFileWidget" name="outputLoc" native="true"/>
+     <widget class="QgsFileWidget" name="outputLoc" native="true">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -218,6 +232,38 @@
     <hint type="destinationlabel">
      <x>20</x>
      <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>save_file</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>label_5</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>52</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>61</x>
+     <y>277</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>save_file</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>outputLoc</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>123</x>
+     <y>252</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>130</x>
+     <y>301</y>
     </hint>
    </hints>
   </connection>

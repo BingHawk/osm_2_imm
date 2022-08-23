@@ -237,14 +237,12 @@ class Main:
                          'OSM to IMM error',
                          "Choose a way to input bounding box\nExiting...")
                 return
-
-            outLoc = self.dlg.outputLoc.filePath()
-
-
-            QMessageBox.information(self.iface.mainWindow(),
-                         'some error here',
-                         bbox.toString()+str(project)+str(outLoc))
-
+            
+            if self.dlg.save_file.checkState() != 0:
+                outLoc = self.dlg.outputLoc.filePath()
+            else:
+                outLoc = None
+                
             qgsMain(project, bbox, outLoc)
 
 

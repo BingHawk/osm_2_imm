@@ -26,6 +26,7 @@ import os
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
+from qgis.gui import QgsFileWidget
 
 from qgis.core import QgsRectangle
 
@@ -44,6 +45,7 @@ class MainDialog(QtWidgets.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+        self.outputLoc.setStorageMode(QgsFileWidget.StorageMode.GetDirectory)
 
     def accept(self) -> None:
         validInput = self.checkInput()
@@ -80,7 +82,7 @@ class MainDialog(QtWidgets.QDialog, FORM_CLASS):
             area = bbox.area()
 
         if area > 0.0025:
-            areaMessage = f"""The area is to large, sorry."""
+            areaMessage = f"""The area is to large, sorry. The tool can handle areas smaller than 0.05°x0.05° (WGS 84)"""
             msgBox = QtWidgets.QMessageBox()
             msgBox.setIcon(QtWidgets.QMessageBox.Critical)
             msgBox.addButton(QtWidgets.QMessageBox.Ok)
@@ -89,7 +91,7 @@ class MainDialog(QtWidgets.QDialog, FORM_CLASS):
             msgBox.exec()
             goVal = False
         elif area > 0.0001:
-            areaMessage = f"""The area is to quite large, this might take a while."""
+            areaMessage = f"""The area is quite large, this might take a while. Do you wish to continue?"""
             msgBox = QtWidgets.QMessageBox()
             msgBox.setIcon(QtWidgets.QMessageBox.Warning)
             msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
@@ -99,6 +101,21 @@ class MainDialog(QtWidgets.QDialog, FORM_CLASS):
 
             if retVal == QtWidgets.QMessageBox.Cancel:
                 goVal = False
+
+        if self.save_file.checkState() != 0:
+            outLoc = self.outputLoc.filePath()
+            if not os.path.exists(outLoc):
+                outPathMessage = "The path is not valid, input a correct path."
+                msgBox = QtWidgets.QMessageBox()
+                msgBox.setIcon(QtWidgets.QMessageBox.Critical)
+                msgBox.addButton(QtWidgets.QMessageBox.Ok)
+                msgBox.setWindowTitle("Area message")
+                msgBox.setText(outPathMessage)
+                msgBox.exec()
+                goVal = False
+
+
+
 
         return goVal
 
