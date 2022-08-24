@@ -1,4 +1,4 @@
-from core.runner import qgsMain, test
+from core.runner import Runner
 
-test()
+Runner.test()
 # qgsMain(outLoc="Users/leonard/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/osm_2_imm/outLayers")

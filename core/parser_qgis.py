@@ -1,4 +1,5 @@
 #%%
+import os
 from qgis.core import ( QgsVectorLayer,
                         QgsLineString,
                         QgsMultiLineString,
@@ -8,10 +9,12 @@ from qgis.core import ( QgsVectorLayer,
                         QgsFeature,
                         QgsFields,
                         QgsMultiPolygon,
-                        QgsCoordinateReferenceSystem)
+                        QgsCoordinateReferenceSystem,
+                        QgsVectorFileWriter,
+                        QgsProject)
 from qgis.PyQt.QtCore import QVariant
 
-from .utilities.tools import camelCaseSplit
+from .utilities.tools import getGroupNameFromFeature, getLayerNameFromFeature
 
 import overpy
 
@@ -21,11 +24,28 @@ except ValueError:
     from settings.config import Config
 
 class Parser:
-    def __init__(self, config:Config = None):
-        if config == None:
-            self.CONFIG = Config()
+    def __init__(self, config:Config = Config(), outLoc:str = None):
+        self.__hasOutLoc:bool = False
+        self.outLoc:str = outLoc
+        self.__hasProject:bool = False
+        self.project:QgsProject = None
+        self.CONFIG:Config = config
+        self.__createdGroups:list = []
+
+        if self.outLoc is not None: 
+            self.__hasOutLoc = True
+
+
+    def setOutLoc(self, outLoc):
+        if outLoc is not None:
+            self.__hasOutLoc = True
         else:
-            self.CONFIG = config
+            self.__hasOutLoc = False
+        self.outLoc = outLoc
+    
+    def setProject(self, project:QgsProject):
+        self.__hasProject = True
+        self.project = project
 
 
     def isRelevant(self, osmFeat: overpy.Result, confFeature: dict) -> bool:
@@ -153,15 +173,14 @@ class Parser:
                             return True # This is a polygon
         else: 
             return False
-                
+
 
     def createQgsLayers(self) -> dict:
         """ creates QgsVectorLayers for each output feature and returns the in a dictionary with the layer names as keys """
 
         lyrs = {}
         for feature in self.CONFIG.features:
-            name = camelCaseSplit(feature)
-            name = '_'.join(name[1:]).lower()
+            name = getLayerNameFromFeature(feature)
             outGeom = self.CONFIG.configJson[feature]['outputGeom']
             if outGeom == 'point':
                 vl = QgsVectorLayer("Point", name, "memory")
@@ -180,8 +199,7 @@ class Parser:
             tags = [QgsField(tag, QVariant.String) for tag in self.CONFIG.configJson[feature]['outputTags']]
             columns.extend(tags)
             pr.addAttributes(columns)
-            vl.updateFields() 
-
+            vl.updateFields()
 
             lyrs[feature] = vl
 
@@ -324,23 +342,25 @@ class Parser:
         return layers
 
         
-    def buffer(self, layer: QgsVectorLayer, bufferScheme:dict) -> QgsGeometry:
+    def buffer(self, layer: QgsVectorLayer, feature:str) -> QgsGeometry:
         """
         Buffer ads a buffer for the input feature based on a mapping setting the buffer radii for each tag value
         
         param val: 
-            geom: the QgsGeometry object to be buffered. 
-            tags: the tags of the feature to be buffered
-            bufferScheme: a CONFIG attribute containing a dictionary with buffer radii for every Key-Value tag pair in the feature.
+            layer: the QgsVectorLayer object to be buffered. 
+            feature: The feature that is being buffered. Used to save the buffered layer and to find bufferring settings from CONFIG
         ret val: a QgsGeometry of type polygon. 
         """
-        vl = QgsVectorLayer("Polygon", "grey_areas", "memory")
+        name = getLayerNameFromFeature(feature)
+        bufferScheme = self.CONFIG.bufferSettings[feature]
+
+        vl = QgsVectorLayer("Polygon", name, "memory")
 
         crs = QgsCoordinateReferenceSystem(self.CONFIG.projectedCrs)
         vl.setCrs(crs)
         pr = vl.dataProvider()
         columns = [QgsField("OSM id", QVariant.Int)]
-        tags = [QgsField(tag, QVariant.String) for tag in self.CONFIG.configJson["voidGreyAreas"]['outputTags']]
+        tags = [QgsField(tag, QVariant.String) for tag in self.CONFIG.configJson[feature]['outputTags']]
         columns.extend(tags)
         pr.addAttributes(columns)
         vl.updateFields()
@@ -351,16 +371,16 @@ class Parser:
 
         for bufferKey in bufferScheme.keys():
             fieldindex = pr.fields().indexOf(bufferKey)
-            for feature in layer.getFeatures():
-                geomTagValue = feature.attributes()[fieldindex]
+            for f in layer.getFeatures():
+                geomTagValue = f.attributes()[fieldindex]
                 try:
                     bufferVal = bufferScheme[bufferKey][geomTagValue]
                 except KeyError:
                     continue
 
-                buffered = feature.geometry().buffer(bufferVal,5)
-                feature.setGeometry(buffered)
-                self.addQgsFeature(vl,feature)
+                buffered = f.geometry().buffer(bufferVal,5)
+                f.setGeometry(buffered)
+                self.addQgsFeature(vl,f)
 
         return vl
 
