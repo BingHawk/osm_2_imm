@@ -13,6 +13,10 @@ from qgis.core import (QgsProject,
                     QgsVectorFileWriter,
                     QgsRectangle
                     )
+from qgis.PyQt.QtWidgets import QProgressDialog, QProgressBar
+from qgis.PyQt.QtCore import Qt
+
+
 
 try:
     from ..settings.config import Config
@@ -23,12 +27,13 @@ except ImportError:
 from .query import Query
 from .parser_qgis import Parser
 
-from .utilities.tools import camelCaseSplit, getGroupNameFromFeature, getLayerNameFromFeature
+from .utilities.tools import getGroupNameFromFeature, getLayerNameFromFeature
 
 import time
 
 class Runner:
 
+    
     CONFIG:Config = Config()
     PARSER:Parser = Parser(CONFIG)
     __createdGroups:list = []
@@ -98,15 +103,38 @@ class Runner:
                 groupMap[groupName] = [feature]
         return groupMap
 
+
     @classmethod
     def qgsMain(cls, project: QgsProject = QgsProject.instance(), bbox:QgsRectangle = CONFIG.bbox_M, outLoc = None ):
+        dialog = QProgressDialog("Runner Working","Cancel",0,100)
+        dialog.setWindowModality(Qt.WindowModal)
+        dialog.setMinimumDuration = 0
+        dialog.setWindowTitle("Running OSM to IMM")
+
+        dialog.setLabelText("Starting processess")
+        dialog.setValue(0)
+        time.sleep(1)
+        
         groupMap = cls.createGroupMap(cls.CONFIG.features)
 
         cls.PARSER.setOutLoc(outLoc)
         cls.PARSER.setProject(project)
 
+        dialog.setLabelText("Querying Overpass")
+        dialog.setValue(25)
+
+
         res = Query.bboxGet(bbox)
+
+        dialog.setLabelText("Parsing")
+        dialog.setValue(50)
+
+
         layers = cls.PARSER.parse(res)
+
+        dialog.setLabelText("Preparing output")
+        dialog.setValue(75)
+
 
         crsOsm = QgsCoordinateReferenceSystem("EPSG:4326")
         crsProj = QgsCoordinateReferenceSystem(cls.CONFIG.projectedCrs) 
@@ -135,6 +163,7 @@ class Runner:
                 g.addLayer(qVectorLayer)
 
         cls.__createdGroups = []
+        dialog.setValue(100)
 
 
 

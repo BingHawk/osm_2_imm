@@ -23,7 +23,8 @@
 """
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QUrl
 from qgis.PyQt.QtGui import QIcon, QDesktopServices
-from qgis.PyQt.QtWidgets import QAction, QMessageBox
+from qgis.PyQt.QtWidgets import QAction, QMessageBox, QProgressDialog, QProgressBar
+
 
 from qgis.core import (QgsProject, QgsRectangle)
 
@@ -202,6 +203,7 @@ class Main:
 
         return msgBox
 
+
     def run(self):
         """Run method that performs all the real work"""
 
@@ -242,7 +244,7 @@ class Main:
                 outLoc = self.dlg.outputLoc.filePath()
             else:
                 outLoc = None
-                
+            
             Runner.qgsMain(project, bbox, outLoc)
 
 
