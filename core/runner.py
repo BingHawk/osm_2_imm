@@ -92,7 +92,7 @@ def qgsMain(project: QgsProject = QgsProject.instance(), bbox:str = CONFIG.bbox_
 
             if outLoc != None:
                 outName = feature+'.gpkg'
-                gpkg_path = os.path.join(outLoc,outName) #Mac speciffic??
+                gpkg_path = os.path.join(outLoc,outName)
                 saveOptions = QgsVectorFileWriter.SaveVectorOptions()
                 # if os.path.exists(gpkg_path): #Denna returnerar alltid False. :(
                 saveOptions.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteFile

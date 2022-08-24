@@ -21,11 +21,17 @@ except ValueError:
     from settings.config import Config
 
 class Parser:
-    def __init__(self, config:Config = None):
+    def __init__(self, config:Config = None, outLoc:str = None):
         if config == None:
             self.CONFIG = Config()
         else:
             self.CONFIG = config
+
+        if outLoc == None: 
+            self.hasOutLoc = False
+        else: 
+            self.hasOutLoc = True
+            self.outLoc = outLoc
 
 
     def isRelevant(self, osmFeat: overpy.Result, confFeature: dict) -> bool:
