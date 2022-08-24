@@ -25,7 +25,7 @@ from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QUrl
 from qgis.PyQt.QtGui import QIcon, QDesktopServices
 from qgis.PyQt.QtWidgets import QAction, QMessageBox
 
-from qgis.core import (QgsProject)
+from qgis.core import (QgsProject, QgsRectangle)
 
 import os.path
 
@@ -33,7 +33,7 @@ import os.path
 from .ui.resources import *
 # Import the code for the dialog
 from .ui.osm_2_imm_dialog import MainDialog
-from .core.runner import *
+from .core.runner import Runner
 # from utils.tools import get_setting, set_setting
 
 
@@ -243,6 +243,6 @@ class Main:
             else:
                 outLoc = None
                 
-            qgsMain(project, bbox, outLoc)
+            Runner.qgsMain(project, bbox, outLoc)
 
 

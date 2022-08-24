@@ -62,7 +62,8 @@ class Config:
         self.volumeBuildings = self.configJson["volumeBuildings"]
 
     def __createQgsRectangle(self, coordString:str) -> QgsRectangle:
-        coords = map(lambda x: float(x), coordString.split(","))
+        coords = list(map(lambda x: float(x), coordString.split(",")))
+        coords = [coords[1],coords[0],coords[3],coords[2]]
         return QgsRectangle(*coords)
 
     def __reverseTags(self):

@@ -25,3 +25,11 @@ def getOsmBboxString(qRect: QgsRectangle) -> str:
     """
     out = f"{qRect.yMinimum()},{qRect.xMinimum()},{qRect.yMaximum()},{qRect.xMaximum()}"
     return out
+
+def getLayerNameFromFeature(feature:str) -> str:
+    name = camelCaseSplit(feature)
+    return '_'.join(name[1:]).lower()
+
+def getGroupNameFromFeature(feature:str) -> str:
+    name = camelCaseSplit(feature)
+    return name[0]
