@@ -201,7 +201,7 @@ class Main:
             desktop_service.openUrl(QUrl('http://www.openstreetmap.org/copyright'))
 
         return msgBox
-    
+
     def run(self):
         """Run method that performs all the real work"""
 
@@ -222,25 +222,27 @@ class Main:
         # See if OK was pressed
         if result:
             if self.dlg.rb_limits.isChecked():
-                south = self.dlg.south.value()
-                west = self.dlg.west.value()
-                north = self.dlg.north.value()
-                east = self.dlg.east.value()
+                south = float(self.dlg.south.value().replace(",","."))
+                west = float(self.dlg.west.value().replace(",","."))
+                north = float(self.dlg.north.value().replace(",","."))
+                east = float(self.dlg.east.value().replace(",","."))
+                # bbox = QgsRectangle(south, west, north, east)
+                bbox = QgsRectangle(west, south, east, north)
 
-                # TODO: input validation. 
-                bbox = south + ", " + west + ", " + north + ", " + east
             elif self.dlg.rb_layer.isChecked():
                 layer = self.dlg.layer.currentLayer()
-                rectangle = layer.extent()
-
-                bbox = str(rectangle.yMinimum()) + ", " + str(rectangle.xMinimum()) + ", " + str(rectangle.yMaximum()) + ", " + str(rectangle.xMaximum())
+                bbox = layer.extent()
             else: 
                 QMessageBox.critical(self.iface.mainWindow(),
                          'OSM to IMM error',
                          "Choose a way to input bounding box\nExiting...")
                 return
-
-            outLoc = self.dlg.outputLoc.filePath()
+            
+            if self.dlg.save_file.checkState() != 0:
+                outLoc = self.dlg.outputLoc.filePath()
+            else:
+                outLoc = None
+                
             qgsMain(project, bbox, outLoc)
 
 

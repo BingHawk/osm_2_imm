@@ -26,6 +26,9 @@ import os
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
+from qgis.gui import QgsFileWidget
+
+from qgis.core import QgsRectangle
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -42,3 +45,77 @@ class MainDialog(QtWidgets.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+        self.outputLoc.setStorageMode(QgsFileWidget.StorageMode.GetDirectory)
+
+    def accept(self) -> None:
+        validInput = self.checkInput()
+        if validInput:
+            self.done( 1 ) 
+
+
+    def checkInput(self) -> bool:
+        goVal = True
+        if self.rb_limits.isChecked():
+            try:
+                south = float(self.south.value().replace(",","."))
+                west = float(self.west.value().replace(",","."))
+                north = float(self.north.value().replace(",","."))
+                east = float(self.east.value().replace(",","."))
+                bbox = QgsRectangle(south, west, north, east)
+                area = bbox.area()
+
+            except ValueError:
+                ErrorMessage = """Incorrect input. 
+                Must be only digits with comma or dot decimal seperator and no spaces.
+                """
+                msgBox = QtWidgets.QMessageBox()
+                msgBox.setIcon(QtWidgets.QMessageBox.Critical)
+                msgBox.addButton(QtWidgets.QMessageBox.Ok)
+                msgBox.setWindowTitle("Input Error")
+                msgBox.setText(ErrorMessage)
+                msgBox.exec()
+                goVal = False
+                area = 0
+        elif self.rb_layer.isChecked():
+            layer = self.layer.currentLayer()
+            bbox = layer.extent()
+            area = bbox.area()
+
+        if area > 0.0025:
+            areaMessage = f"""The area is to large, sorry. The tool can handle areas smaller than 0.05°x0.05° (WGS 84)"""
+            msgBox = QtWidgets.QMessageBox()
+            msgBox.setIcon(QtWidgets.QMessageBox.Critical)
+            msgBox.addButton(QtWidgets.QMessageBox.Ok)
+            msgBox.setWindowTitle("Area message")
+            msgBox.setText(areaMessage)
+            msgBox.exec()
+            goVal = False
+        elif area > 0.0001:
+            areaMessage = f"""The area is quite large, this might take a while. Do you wish to continue?"""
+            msgBox = QtWidgets.QMessageBox()
+            msgBox.setIcon(QtWidgets.QMessageBox.Warning)
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+            msgBox.setWindowTitle("Area warning")
+            msgBox.setText(areaMessage)
+            retVal = msgBox.exec()
+
+            if retVal == QtWidgets.QMessageBox.Cancel:
+                goVal = False
+
+        if self.save_file.checkState() != 0:
+            outLoc = self.outputLoc.filePath()
+            if not os.path.exists(outLoc):
+                outPathMessage = "The path is not valid, input a correct path."
+                msgBox = QtWidgets.QMessageBox()
+                msgBox.setIcon(QtWidgets.QMessageBox.Critical)
+                msgBox.addButton(QtWidgets.QMessageBox.Ok)
+                msgBox.setWindowTitle("Area message")
+                msgBox.setText(outPathMessage)
+                msgBox.exec()
+                goVal = False
+
+
+
+
+        return goVal
+

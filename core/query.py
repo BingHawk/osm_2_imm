@@ -1,6 +1,10 @@
 import overpy
 import time
 
+from .utilities.tools import getOsmBboxString
+
+from qgis.core import QgsRectangle
+
 class Query:
     API = overpy.Overpass()
     # Takes one or more list of tags as key = [values] or as a dictionary with {key = [values]} and returns a string to be used in Overpass QL query.
@@ -45,7 +49,7 @@ class Query:
         {};
         (._;>;);
         out;
-        '''.format(bbox, cls.__unionTags(geom, tags))
+        '''.format(getOsmBboxString(bbox), cls.__unionTags(geom, tags))
         if printquery:
             print(queryString)
         while True:
@@ -64,13 +68,13 @@ class Query:
         return res
 
     @classmethod
-    def bboxGet(cls, bbox:str, printquery = False):
+    def bboxGet(cls, bbox:QgsRectangle, printquery = False):
         queryString = '''
         [out:json];
         nwr({});
         (._;>;);
         out;
-        '''.format(bbox)
+        '''.format(getOsmBboxString(bbox))
 
         if printquery:
             print(queryString)
