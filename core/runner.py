@@ -144,18 +144,24 @@ class Runner:
         self.PARSER.setOutLoc(self.outLoc)
         self.PARSER.setProject(self.project)
 
+        if dialog.wasCanceled():
+            return
         dialog.setLabelText("Querying Overpass")
         dialog.setValue(25)
         time.sleep(1)
 
         res = Query.bboxGet(self.bbox)
-
+        
+        if dialog.wasCanceled():
+            return
         dialog.setLabelText("Parsing")
         dialog.setValue(50)
         time.sleep(1)
 
         layers = self.PARSER.parse(res)
 
+        if dialog.wasCanceled():
+            return
         dialog.setLabelText("Preparing output")
         dialog.setValue(75)
         time.sleep(1)
