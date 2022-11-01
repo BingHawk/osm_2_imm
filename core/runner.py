@@ -103,38 +103,63 @@ class Runner:
                 groupMap[groupName] = [feature]
         return groupMap
 
+    @classmethod
+    def cancelRun(dialog):
+        dialog.setLabelText("Aborting...")
+        dialog.setValue(0)
+        return
 
     @classmethod
-    def qgsMain(cls, project: QgsProject = QgsProject.instance(), bbox:QgsRectangle = CONFIG.bbox_M, outLoc = None ):
-        dialog = QProgressDialog("Runner Working","Cancel",0,100)
+    def qgsMain(cls, project: QgsProject = QgsProject.instance(), bbox:QgsRectangle = CONFIG.bbox_M, outLoc = None, mainWindow = None ):
+        dialog = QProgressDialog("Runner Working","Cancel",0,100,mainWindow)
         dialog.setWindowModality(Qt.WindowModal)
-        dialog.setMinimumDuration = 0
+        dialog.setMinimumDuration(0)
         dialog.setWindowTitle("Running OSM to IMM")
 
         dialog.setLabelText("Starting processess")
-        dialog.setValue(0)
+        dialog.setMinimumWidth(300)
+        dialog.show()
+        
+        dialog.setLabelText("Starting processess")
+        dialog.setValue(10)
+        if dialog.wasCanceled():
+            dialog.setLabelText("Aborting...")
+            dialog.setValue(0)
+            return
         time.sleep(1)
         
-        groupMap = cls.createGroupMap(cls.CONFIG.features)
+        groupMap = cls.createGroupMap(cls.CONFIG.features)        
 
         cls.PARSER.setOutLoc(outLoc)
         cls.PARSER.setProject(project)
 
         dialog.setLabelText("Querying Overpass")
         dialog.setValue(25)
-
+        if dialog.wasCanceled():
+            dialog.setLabelText("Aborting...")
+            dialog.setValue(0)
+            return
+        time.sleep(1)
 
         res = Query.bboxGet(bbox)
 
         dialog.setLabelText("Parsing")
         dialog.setValue(50)
-
+        if dialog.wasCanceled():
+            dialog.setLabelText("Aborting...")
+            dialog.setValue(0)
+            return
+        time.sleep(1)
 
         layers = cls.PARSER.parse(res)
 
         dialog.setLabelText("Preparing output")
         dialog.setValue(75)
-
+        if dialog.wasCanceled():
+            dialog.setLabelText("Aborting...")
+            dialog.setValue(0)
+            return
+        time.sleep(1)
 
         crsOsm = QgsCoordinateReferenceSystem("EPSG:4326")
         crsProj = QgsCoordinateReferenceSystem(cls.CONFIG.projectedCrs) 
@@ -163,6 +188,7 @@ class Runner:
                 g.addLayer(qVectorLayer)
 
         cls.__createdGroups = []
+
         dialog.setValue(100)
 
 

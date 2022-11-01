@@ -29,6 +29,7 @@ from qgis.PyQt.QtWidgets import QAction, QMessageBox, QProgressDialog, QProgress
 from qgis.core import (QgsProject, QgsRectangle)
 
 import os.path
+import time
 
 # Initialize Qt resources from file resources.py
 from .ui.resources import *
@@ -245,6 +246,6 @@ class Main:
             else:
                 outLoc = None
             
-            Runner.qgsMain(project, bbox, outLoc)
+            Runner.qgsMain(project, bbox, outLoc, self.iface.mainWindow())
 
 
