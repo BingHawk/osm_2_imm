@@ -246,6 +246,7 @@ class Main:
             else:
                 outLoc = None
             
-            Runner.qgsMain(project, bbox, outLoc, self.iface.mainWindow())
+            runner = Runner(self.iface)
+            runner.setProject(project).setBbox(bbox).setOutLoc(outLoc).qgsMain()
 
 
