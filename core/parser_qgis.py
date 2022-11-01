@@ -13,6 +13,8 @@ from qgis.core import ( QgsVectorLayer,
                         QgsVectorFileWriter,
                         QgsProject)
 from qgis.PyQt.QtCore import QVariant
+from qgis.PyQt.QtWidgets import QProgressDialog, QProgressBar
+
 
 from .utilities.tools import getGroupNameFromFeature, getLayerNameFromFeature
 
@@ -217,6 +219,9 @@ class Parser:
             output is a dictionary of QgsVectorLayers
         """
 
+        totalToParse = len(res.nodes) + len(res.ways) + len(res.relations)
+        parsed = 0
+
         layers = self.createQgsLayers()
 
         print("Parsing Nodes", end="\r")
@@ -236,6 +241,8 @@ class Parser:
                 qPointF.setGeometry(QgsGeometry.fromPointXY(nodeGeoms[node.id]))
 
                 self.addQgsFeature(layers[feature], qPointF)
+            
+            parsed += 1
         
         print("Parsing Ways ", end="\r")
         wayGeoms = {}
@@ -265,6 +272,8 @@ class Parser:
                         qLineF.setGeometry(line)
 
                 self.addQgsFeature(layers[feature], qLineF)
+            
+            parsed += 1
 
         print("Parsing Relations", end="\r")
         iter = 0
@@ -339,6 +348,9 @@ class Parser:
 
                     qRelF.setGeometry(outGeom)
                     self.addQgsFeature(layers[feature], qRelF)
+            
+            parsed += 1
+
         return layers
 
         

@@ -13,6 +13,10 @@ from qgis.core import (QgsProject,
                     QgsVectorFileWriter,
                     QgsRectangle
                     )
+from qgis.PyQt.QtWidgets import QProgressDialog, QProgressBar
+from qgis.PyQt.QtCore import Qt, QThread, pyqtSignal
+
+
 
 try:
     from ..settings.config import Config
@@ -23,19 +27,24 @@ except ImportError:
 from .query import Query
 from .parser_qgis import Parser
 
-from .utilities.tools import camelCaseSplit, getGroupNameFromFeature, getLayerNameFromFeature
+from .utilities.tools import getGroupNameFromFeature, getLayerNameFromFeature
 
 import time
 
 class Runner:
 
-    CONFIG:Config = Config()
-    PARSER:Parser = Parser(CONFIG)
-    __createdGroups:list = []
+    def __init__(self, iface= None):
+        self.CONFIG:Config = Config()
+        self.PARSER:Parser = Parser(self.CONFIG)
+        self.project: QgsProject = QgsProject.instance()
+        self.bbox:QgsRectangle = self.CONFIG.bbox_M
+        self.outLoc = None
+        self.mainWindow = None
+        self.iface = iface
+        self.__createdGroups:list = []
 
-    @classmethod
-    def transformQLayer(cls, qLayer:QgsVectorLayer, crsSrc:QgsCoordinateReferenceSystem, crsDest:QgsCoordinateReferenceSystem, project:QgsProject) -> QgsVectorLayer:
-        transformContext = project.transformContext()
+    def transformQLayer(self, qLayer:QgsVectorLayer, crsSrc:QgsCoordinateReferenceSystem, crsDest:QgsCoordinateReferenceSystem) -> QgsVectorLayer:
+        transformContext = self.project.transformContext()
         xform = QgsCoordinateTransform(crsSrc, crsDest, transformContext)
         feats = []
         for f in qLayer.getFeatures():
@@ -61,8 +70,7 @@ class Runner:
 
         return vl
 
-    @classmethod
-    def saveLayer(cls, feature:str, vl:QgsVectorLayer, outLoc:str, project: QgsProject) -> str:
+    def saveLayer(self, feature:str, vl:QgsVectorLayer, outLoc:str) -> str:
         """
         Saves vl to a geopackage with the name of the first part of the feature name. 
         """
@@ -72,18 +80,17 @@ class Runner:
         gpkgPath = os.path.join(outLoc,outName)
 
         saveOptions = QgsVectorFileWriter.SaveVectorOptions()
-        if groupName not in cls.__createdGroups:
-            cls.__createdGroups.append(groupName)
+        if groupName not in self.__createdGroups:
+            self.__createdGroups.append(groupName)
             saveOptions.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteFile
         else:
             saveOptions.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
         saveOptions.driverName = "GPKG"
         saveOptions.layerName = getLayerNameFromFeature(feature)
-        err = QgsVectorFileWriter.writeAsVectorFormatV2(vl, gpkgPath, project.transformContext(), saveOptions)
+        err = QgsVectorFileWriter.writeAsVectorFormatV2(vl, gpkgPath, self.project.transformContext(), saveOptions)
         return gpkgPath
 
-    @classmethod
-    def createGroupMap(cls, features: list)-> dict:
+    def createGroupMap(self, features: list)-> dict:
         """
         Creates a dictionary with the group name as keys and a list of the features included as values
         """
@@ -98,43 +105,96 @@ class Runner:
                 groupMap[groupName] = [feature]
         return groupMap
 
-    @classmethod
-    def qgsMain(cls, project: QgsProject = QgsProject.instance(), bbox:QgsRectangle = CONFIG.bbox_M, outLoc = None ):
-        groupMap = cls.createGroupMap(cls.CONFIG.features)
+    def cancelRun(self, dialog):
+        dialog.setLabelText("Aborting...")
+        dialog.setValue(0)
+        return
 
-        cls.PARSER.setOutLoc(outLoc)
-        cls.PARSER.setProject(project)
+    def setBbox(self, bbox):
+        self.bbox = bbox
+        # Returns itself for methodchaining
+        return self
 
-        res = Query.bboxGet(bbox)
-        layers = cls.PARSER.parse(res)
+    def setProject(self, project):
+        self.project = project
+        # Returns itself for methodchaining
+        return self
+
+    def setOutLoc(self, outLoc):
+        self.outLoc = outLoc
+        # Returns itself for methodchaining
+        return self
+
+    def qgsMain(self):
+        dialog = QProgressDialog("Runner Working","Cancel",0,100,self.iface.mainWindow())
+        dialog.setWindowModality(Qt.WindowModal)
+        dialog.setMinimumDuration(0)
+        dialog.setWindowTitle("Running OSM to IMM")
+
+        dialog.setLabelText("Starting processess")
+        dialog.setMinimumWidth(300)
+        dialog.show()
+        
+        dialog.setLabelText("Starting processess")
+        dialog.setValue(10)
+        time.sleep(1)
+        
+        groupMap = self.createGroupMap(self.CONFIG.features)        
+
+        self.PARSER.setOutLoc(self.outLoc)
+        self.PARSER.setProject(self.project)
+
+        if dialog.wasCanceled():
+            return
+        dialog.setLabelText("Querying Overpass")
+        dialog.setValue(25)
+        time.sleep(1)
+
+        res = Query.bboxGet(self.bbox)
+        
+        if dialog.wasCanceled():
+            return
+        dialog.setLabelText("Parsing")
+        dialog.setValue(50)
+        time.sleep(1)
+
+        layers = self.PARSER.parse(res)
+
+        if dialog.wasCanceled():
+            return
+        dialog.setLabelText("Preparing output")
+        dialog.setValue(75)
+        time.sleep(1)
 
         crsOsm = QgsCoordinateReferenceSystem("EPSG:4326")
-        crsProj = QgsCoordinateReferenceSystem(cls.CONFIG.projectedCrs) 
-        voidGreyAreasTranformed = cls.transformQLayer(layers['voidGreyAreas'], crsOsm, crsProj, project)
+        crsProj = QgsCoordinateReferenceSystem(self.CONFIG.projectedCrs) 
+        voidGreyAreasTranformed = self.transformQLayer(layers['voidGreyAreas'], crsOsm, crsProj)
 
-        buffered = cls.PARSER.buffer(voidGreyAreasTranformed, 'voidGreyAreas')
-        buffered = cls.transformQLayer(buffered, crsProj, crsOsm, project)
+        buffered = self.PARSER.buffer(voidGreyAreasTranformed, 'voidGreyAreas')
+        buffered = self.transformQLayer(buffered, crsProj, crsOsm)
 
         layers['voidGreyAreas'] = buffered
 
-        root = project.layerTreeRoot()
+        root = self.project.layerTreeRoot()
         
         for group in groupMap.keys():
             g = root.addGroup(group) 
             for feature in groupMap[group]:
                 
-                if outLoc is not None:
+                if self.outLoc is not None:
                     name = getLayerNameFromFeature(feature)
-                    gpkgPath = cls.saveLayer(feature,layers[feature],outLoc,project)
+                    gpkgPath = self.saveLayer(feature,layers[feature],self.outLoc)
                     pathToLayer = gpkgPath+f"|layername={name}"
                     qVectorLayer = QgsVectorLayer(pathToLayer, name, "ogr")
                 else:
                     qVectorLayer = layers[feature]
                     
-                project.addMapLayer(qVectorLayer, False)
+                self.project.addMapLayer(qVectorLayer, False)
                 g.addLayer(qVectorLayer)
 
-        cls.__createdGroups = []
+        self.__createdGroups = []
+
+        dialog.setValue(100)
 
 
 
@@ -216,7 +276,15 @@ class Runner:
             #         print("Feature:", f.id(), f.attributes(), f.geometry().asWkt())
 
 
+class Worker(QThread):
+    trigged = pyqtSignal(int)
+    def __init__(self):
+        QThread.__init__(self)
 
+
+    def run(self):
+
+        string = self.triggered.emit(1)
 
     
 # _______ Main program calls ______
