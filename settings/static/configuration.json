@@ -544,7 +544,7 @@
         "military"
       ]
     },
-    "outputTags": ["amenety", "opening_hours", "name", "healthcare", "operator"]
+    "outputTags": ["amenety", "opening_hours", "name", "healthcare", "building", "operator"]
   },
   "boundariesAdministrative": {
     "inputGeom": "way",
