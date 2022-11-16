@@ -46,8 +46,11 @@
   "networkParkings": {
     "inputGeom": "node",
     "outputGeom": "point",
-    "inputTags": { "amenety": ["parking", "parking_space"] },
-    "outputTags": ["amenety", "parking", "fee", "capacity"]
+    "inputTags": {
+      "amenety": ["parking", "parking_space"],
+      "building": ["carport", "garage", "garages", "parking"]
+    },
+    "outputTags": ["amenety", "building", "parking", "fee", "capacity"]
   },
   "networkTaxi": {
     "inputGeom": "node",
@@ -487,15 +490,61 @@
         "rehabilitation",
         "vaccination_centre",
         "yes"
+      ],
+      "building": [
+        "hotel",
+        "comercial",
+        "industrial",
+        "kiosk",
+        "office",
+        "retail",
+        "supermarket",
+        "warehouse",
+        "cathedral",
+        "chapel",
+        "church",
+        "kingdom_hall",
+        "monastery",
+        "mosque",
+        "presbytary",
+        "religous",
+        "shrine",
+        "synagog",
+        "temple",
+        "civil",
+        "college",
+        "fire_station",
+        "government",
+        "hospital",
+        "kindergarten",
+        "public",
+        "scool",
+        "toilets",
+        "train_station",
+        "transportation",
+        "university",
+        "barn",
+        "conservatory",
+        "cowshed",
+        "farm_auxiliary",
+        "greenhouse",
+        "stable",
+        "sty",
+        "grandstand",
+        "pavilion",
+        "riding_hall",
+        "sports_hall",
+        "stadium",
+        "hangar",
+        "digester",
+        "service",
+        "transformer_tower",
+        "water_tower",
+        "castle",
+        "military"
       ]
     },
-    "outputTags": [
-      "amenety",
-      "opening_hours",
-      "name",
-      "healthcare",
-      "operator"
-    ]
+    "outputTags": ["amenety", "opening_hours", "name", "healthcare", "operator"]
   },
   "boundariesAdministrative": {
     "inputGeom": "way",
