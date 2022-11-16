@@ -200,8 +200,7 @@ class Runner:
 
     
 # __________TESTING CODE_____________
-    @classmethod
-    def test(cls):
+    def test(self):
         tic = time.time()
         qTic = time.time()
         """ Tests nodes """
@@ -229,29 +228,29 @@ class Runner:
         #                     printquery=True)
 
         """ Tests everything in the bbox"""
-        res = Query.bboxGet(cls.CONFIG.bbox_M, printquery=True)
+        res = Query.bboxGet(self.bbox, printquery=True)
 
 
         print("")
-        groupMap = cls.createGroupMap(cls.CONFIG.features)
+        groupMap = self.createGroupMap(self.CONFIG.features)
 
         qToc = time.time()
         qTime = qToc - qTic
-        layers = cls.PARSER.parse(res)
+        layers = self.PARSER.parse(res)
 
         project = QgsProject.instance()
 
         crsOsm = QgsCoordinateReferenceSystem("EPSG:4326")
-        crsProj = QgsCoordinateReferenceSystem(cls.CONFIG.projectedCrs) 
-        voidGreyAreasTranformed = cls.transformQLayer(layers['voidGreyAreas'], crsOsm, crsProj, project)
+        crsProj = QgsCoordinateReferenceSystem(self.CONFIG.projectedCrs) 
+        voidGreyAreasTranformed = self.transformQLayer(layers['voidGreyAreas'], crsOsm, crsProj)
 
-        buffered = cls.PARSER.buffer(voidGreyAreasTranformed, 'voidGreyAreas')
-        buffered = cls.transformQLayer(buffered, crsProj, crsOsm, project)
+        buffered = self.PARSER.buffer(voidGreyAreasTranformed, 'voidGreyAreas')
+        buffered = self.transformQLayer(buffered, crsProj, crsOsm)
 
         layers['voidGreyAreas'] = buffered
 
         groupMap = {}
-        for feature in cls.CONFIG.features:
+        for feature in self.CONFIG.features:
             groupName = getGroupNameFromFeature(feature)
 
             if groupName in groupMap.keys():
