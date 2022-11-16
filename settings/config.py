@@ -3,7 +3,10 @@ import importlib.resources
 import json
 from qgis.core import QgsRectangle
 
-from . import static
+try: 
+    from . import static
+except ImportError:
+    import static
 
 class Config:
     def __init__(self):
@@ -16,6 +19,7 @@ class Config:
 
         with importlib.resources.open_text(static, self.__configurationFilePath) as file:
             self.configJson = json.load(file)
+            self.layerDefenition = {key: val for key, val in self.configJson.items() if key != 'bbox' and key != 'crs'}
 
         with importlib.resources.open_text(static, self.__polygon_featuresFilePath) as file:
             self.polygonFeatures = json.load(file)
@@ -85,17 +89,12 @@ class Config:
 
     # Sorting tags and placing them in sorted tags.
     def __sortTags(self):
-        for feature in self.configJson.values():
-            try:
-                for tagKey in feature['inputTags'].keys():
-                    if tagKey not in self.sortedTags:
-                        self.sortedTags[tagKey] = feature['inputTags'][tagKey]
-                    else:
-                        self.sortedTags[tagKey].extend(feature['inputTags'][tagKey])
-            except KeyError: # For entrances in the config that is not features and thus lack 'inputTags' field
-                continue
-            except TypeError: # For entrances that does not have aditional levels of dictionaries
-                continue
+        for feature in self.layerDefenition.values():
+            inputTags = feature['inputTags']
+            for tagKey in inputTags.keys():
+                if tagKey not in self.sortedTags:
+                    self.sortedTags[tagKey] = []
+                self.sortedTags[tagKey].extend(inputTags[tagKey])
         
         for tagKey in self.sortedTags.keys(): #Remove duplicates in each tagValue list. 
             self.sortedTags[tagKey] = list(dict.fromkeys(self.sortedTags[tagKey]))
@@ -106,4 +105,4 @@ class Config:
 if __name__ == "__main__":
     config = Config()
 
-    print(config.features)
+    print("json", config.configJson['networkParkings']['inputTags'])
