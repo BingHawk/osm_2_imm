@@ -40,23 +40,23 @@
   "networkBikeRacks": {
     "inputGeom": "node",
     "outputGeom": "point",
-    "inputTags": { "amenety": ["bicycle_parking", "bicycle_rental"] },
-    "outputTags": ["amenety", "capacity"]
+    "inputTags": { "amenity": ["bicycle_parking", "bicycle_rental"] },
+    "outputTags": ["amenity", "capacity"]
   },
   "networkParkings": {
     "inputGeom": "node",
     "outputGeom": "point",
     "inputTags": {
-      "amenety": ["parking", "parking_space"],
+      "amenity": ["parking", "parking_space"],
       "building": ["carport", "garage", "garages", "parking"]
     },
-    "outputTags": ["amenety", "building", "parking", "fee", "capacity"]
+    "outputTags": ["amenity", "building", "parking", "fee", "capacity"]
   },
   "networkTaxi": {
     "inputGeom": "node",
     "outputGeom": "point",
-    "inputTags": { "amenety": ["taxi"] },
-    "outputTags": ["amenety", "capacity"]
+    "inputTags": { "amenity": ["taxi"] },
+    "outputTags": ["amenity", "capacity"]
   },
   "networkPtLines": {
     "inputGeom": "way",
@@ -99,11 +99,11 @@
         "train",
         "trolleybus"
       ],
-      "amenety": ["car_sharing", "ferry_terminal"]
+      "amanity": ["car_sharing", "ferry_terminal"]
     },
     "outputTags": [
       "route",
-      "amenety",
+      "amanity",
       "name",
       "route_master",
       "operator",
@@ -329,7 +329,7 @@
         "weapons",
         "yes"
       ],
-      "amenety": [
+      "amanity": [
         "bar",
         "cafe",
         "fast_food",
@@ -374,7 +374,7 @@
       "name",
       "office",
       "shop",
-      "amenety",
+      "amanity",
       "leissure",
       "website",
       "opening_hours",
@@ -429,7 +429,7 @@
     "inputGeom": "node",
     "outputGeom": "point",
     "inputTags": {
-      "amenety": [
+      "amanity": [
         "collage",
         "kindergarten",
         "language_school",
@@ -545,7 +545,7 @@
       ]
     },
     "outputTags": [
-      "amenety",
+      "amanity",
       "opening_hours",
       "name",
       "healthcare",
@@ -557,7 +557,7 @@
     "inputGeom": "node",
     "outputGeom": "point",
     "inputTags": {
-      "amenety": [
+      "amanity": [
         "collage",
         "kindergarten",
         "language_school",
@@ -926,12 +926,12 @@
       ]
     },
     "outputTags": [
-      "amenety",
+      "amanity",
       "healthcare",
       "building",
       "office",
       "shop",
-      "amenety",
+      "amanity",
       "leissure",
       "name",
       "operator",
@@ -968,29 +968,6 @@
       ]
     },
     "outputTags": ["leissure", "sport", "tourism", "access"]
-  },
-  "voidBlocks": {
-    "inputGeom": "way",
-    "outputGeom": "polygon",
-    "inputTags": {
-      "highway": [
-        "motorway",
-        "trunk",
-        "primary",
-        "secondary",
-        "tertiary",
-        "unclassified",
-        "residential",
-        "motorway_link",
-        "trunk_link",
-        "primary_link",
-        "secondary_link",
-        "tertiary_link",
-        "living_street",
-        "road"
-      ]
-    },
-    "outputTags": ["highway"]
   },
   "voidBlueAreas": {
     "inputGeom": "way",
@@ -1184,8 +1161,9 @@
     "bbox_xxlarge": "45.2, 9, 45.7, 9.5",
     "bbox_xlarge": "45.43, 9.14, 45.53, 9.24",
     "bbox_large": "45.45, 9.2, 45.5, 9.25",
-    "bbox_std": "45.47692, 9.22551, 45.47945, 9.23028",
-    "bbox_small": "45.47892, 9.22551, 45.47945, 9.22628",
+    "bbox_std": "45.474, 9.222, 45.482, 9.232",
+    "bbox_small": "45.47692, 9.22551, 45.47945, 9.23028",
+    "bbox_xsmall": "45.47892, 9.22551, 45.47945, 9.22628",
     "bbox_xlarge_dakar": "14.60, -17.51, 14.9, -17.14",
     "bbox_large_dakar": "14.7, -17.46, 14.75, -17.41",
     "bbox_std_dakar": "14.72, -17.441, 14.73, -17.431"

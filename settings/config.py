@@ -39,6 +39,7 @@ class Config:
         self.bbox_L = self.__createQgsRectangle(self.configJson['bbox']['bbox_large'])
         self.bbox_M = self.__createQgsRectangle(self.configJson['bbox']['bbox_std'])
         self.bbox_S = self.__createQgsRectangle(self.configJson['bbox']['bbox_small'])
+        self.bbox_XS = self.__createQgsRectangle(self.configJson['bbox']['bbox_xsmall'])
         self.bbox_XL_D = self.__createQgsRectangle(self.configJson['bbox']['bbox_xlarge_dakar'])
         self.bbox_L_D = self.__createQgsRectangle(self.configJson['bbox']['bbox_large_dakar'])
         self.bbox_M_D = self.__createQgsRectangle(self.configJson['bbox']['bbox_std_dakar'])
@@ -46,24 +47,24 @@ class Config:
         # Adding the features as attributes of the config object
         # TODO: make dynamic so user can specify wanted attributes. 
         
-        self.networkStreet = self.configJson["networkStreet"]
-        self.networkBikelanes = self.configJson["networkBikelanes"]
-        self.networkBikeRacks = self.configJson["networkBikeRacks"]
-        self.networkParkings = self.configJson["networkParkings"]
-        self.networkTaxi = self.configJson["networkTaxi"]
-        self.networkPTLines = self.configJson["networkPtLines"]
-        self.networkPTStops = self.configJson["networkPtStops"]
-        self.usesActivities = self.configJson["usesActivities"]
-        self.usesLanduse = self.configJson["usesLanduse"]
-        self.usesServices = self.configJson["usesServices"]
-        self.boundariesAdministrative = self.configJson["boundariesAdministrative"]
-        self.voidAreasOpenAir = self.configJson["voidAreasOpenAir"]
-        self.voidBlocks = self.configJson["voidBlocks"]
-        self.voidBlueAreas = self.configJson["voidBlueAreas"]
-        self.voidGreenAreas = self.configJson["voidGreenAreas"]
-        self.voidGreyAreas = self.configJson["voidGreyAreas"]
-        self.voidTrees = self.configJson["voidTrees"]
-        self.volumeBuildings = self.configJson["volumeBuildings"]
+        # self.networkStreet = self.configJson["networkStreet"]
+        # self.networkBikelanes = self.configJson["networkBikelanes"]
+        # self.networkBikeRacks = self.configJson["networkBikeRacks"]
+        # self.networkParkings = self.configJson["networkParkings"]
+        # self.networkTaxi = self.configJson["networkTaxi"]
+        # self.networkPTLines = self.configJson["networkPtLines"]
+        # self.networkPTStops = self.configJson["networkPtStops"]
+        # self.usesActivities = self.configJson["usesActivities"]
+        # self.usesLanduse = self.configJson["usesLanduse"]
+        # self.usesServices = self.configJson["usesServices"]
+        # self.boundariesAdministrative = self.configJson["boundariesAdministrative"]
+        # self.voidAreasOpenAir = self.configJson["voidAreasOpenAir"]
+        # self.voidBlocks = self.configJson["voidBlocks"]
+        # self.voidBlueAreas = self.configJson["voidBlueAreas"]
+        # self.voidGreenAreas = self.configJson["voidGreenAreas"]
+        # self.voidGreyAreas = self.configJson["voidGreyAreas"]
+        # self.voidTrees = self.configJson["voidTrees"]
+        # self.volumeBuildings = self.configJson["volumeBuildings"]
 
     def __createQgsRectangle(self, coordString:str) -> QgsRectangle:
         coords = list(map(lambda x: float(x), coordString.split(",")))
