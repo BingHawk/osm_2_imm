@@ -28,7 +28,9 @@ from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.gui import QgsFileWidget
 
-from qgis.core import QgsRectangle
+from qgis.core import QgsRectangle, QgsCoordinateReferenceSystem, QgsProject
+
+from ..core.utilities.tools import transformQLayer
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -52,6 +54,9 @@ class MainDialog(QtWidgets.QDialog, FORM_CLASS):
         if validInput:
             self.done( 1 ) 
 
+    def setProject(self, project:QgsProject):
+        """add project reference to dialog for reproject"""
+        self.project = project
 
     def checkInput(self) -> bool:
         goVal = True
@@ -78,20 +83,25 @@ class MainDialog(QtWidgets.QDialog, FORM_CLASS):
                 area = 0
         elif self.rb_layer.isChecked():
             layer = self.layer.currentLayer()
-            bbox = layer.extent()
-            area = bbox.area()
+            crsIn = layer.sourceCrs()
+            crsProj = QgsCoordinateReferenceSystem("EPSG:3857") # Projected system
+            crsOsm = QgsCoordinateReferenceSystem("EPSG:4326")
+            layerProjected = transformQLayer(self.project, layer, crsIn, crsProj)
+            layerOsm = transformQLayer(self.project, layer, crsIn, crsOsm)
+            bbox = layerOsm.extent()
+            area = layerProjected.extent().area()
 
-        if area > 0.0025:
-            areaMessage = f"""The area is to large, sorry. The tool can handle areas smaller than 0.05°x0.05° (WGS 84)"""
+        if area > 40000000:
+            areaMessage = f"""The area is to large, sorry {area/1000000}km^2. The tool can handle areas smaller than 40km^2"""
             msgBox = QtWidgets.QMessageBox()
             msgBox.setIcon(QtWidgets.QMessageBox.Critical)
             msgBox.addButton(QtWidgets.QMessageBox.Ok)
             msgBox.setWindowTitle("Area message")
             msgBox.setText(areaMessage)
             msgBox.exec()
-            goVal = False
-        elif area > 0.0001:
-            areaMessage = f"""The area is quite large, this might take a while. Do you wish to continue?"""
+            # goVal = False
+        elif area > 10000000:
+            areaMessage = f"""The area is quite large {area/1000000}km^2, this might take a while. Do you wish to continue?"""
             msgBox = QtWidgets.QMessageBox()
             msgBox.setIcon(QtWidgets.QMessageBox.Warning)
             msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)

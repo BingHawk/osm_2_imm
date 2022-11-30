@@ -218,6 +218,7 @@ class Main:
             self.dlg = MainDialog()
 
         project = QgsProject.instance()
+        self.dlg.setProject(project)
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop

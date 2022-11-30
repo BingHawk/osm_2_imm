@@ -4,6 +4,7 @@ from qgis.core import ( QgsVectorLayer,
                         QgsLineString,
                         QgsMultiLineString,
                         QgsPointXY,
+                        QgsPoint,
                         QgsGeometry,
                         QgsField,
                         QgsFeature,
@@ -33,6 +34,12 @@ class Parser:
         self.project:QgsProject = None
         self.CONFIG:Config = config
         self.__createdGroups:list = []
+        self.fid = 0
+
+        self.qgsLyrs:dict = {}
+        self.qgsFields:dict = {}
+        
+        self.createQgsLayers()
 
         if self.outLoc is not None: 
             self.__hasOutLoc = True
@@ -48,6 +55,40 @@ class Parser:
     def setProject(self, project:QgsProject):
         self.__hasProject = True
         self.project = project
+
+    def createQgsLayers(self) -> None:
+        """ 
+        creates QgsVectorLayers for each output feature.
+        Creates the following properties:
+            self.qgsLayers:  a dictionary with the layer names as keys and a QgsLayer as value
+        """
+
+        for feature in self.CONFIG.features:
+            name = getLayerNameFromFeature(feature)
+            outGeom = self.CONFIG.configJson[feature]['outputGeom']
+            if outGeom == 'point':
+                vl = QgsVectorLayer("Point", name, "memory")
+            elif outGeom == 'line':
+                vl = QgsVectorLayer("LineString", name, "memory")
+            elif outGeom == 'polygon':
+                if feature in self.CONFIG.bufferSettings.keys():
+                    vl = QgsVectorLayer("LineString", name, "memory")
+                else:
+                    vl = QgsVectorLayer("Polygon", name, "memory")
+
+            crs = QgsCoordinateReferenceSystem("EPSG:4326")
+            vl.setCrs(crs)
+            pr = vl.dataProvider()
+            columns = [QgsField("OSM id", QVariant.Int)]
+            tags = [QgsField(tag, QVariant.String) for tag in self.CONFIG.configJson[feature]['outputTags']]
+            columns.extend(tags)
+            pr.addAttributes(columns)
+            vl.updateFields()
+
+            if not vl or not vl.isValid:
+                print(f"layer {feature} was not created")
+
+            self.qgsLyrs[feature] = vl
 
 
     def isRelevant(self, osmFeat: overpy.Result, confFeature: dict) -> bool:
@@ -102,9 +143,7 @@ class Parser:
 
         outTags = self.CONFIG.configJson[feature]['outputTags']
 
-        fields = QgsFields()
-        fields.append(QgsField("OSM id", QVariant.Int))
-        for key in outTags : fields.append(QgsField(key, QVariant.String)) 
+        fields = self.qgsLyrs[feature].fields()
         f = QgsFeature(fields)
         f['OSM id'] = obj.id
         for key in obj.tags.keys(): 
@@ -113,12 +152,35 @@ class Parser:
         return f
 
 
-    def addQgsFeature(self, lyr:QgsVectorLayer, feat:QgsFeature):
-        """ Helper functions that adds a feature to a layers data provider and updates the layer"""
+    def addQgsFeatures(self, lyr:QgsVectorLayer, feat:QgsFeature) -> bool:
+        """ 
+        Helper functions that adds a feature to a layers data provider and updates the layer
+        param: 
+            lyr: a QgsVectorLayer to which the feature should be added
+            feat: a list of QgsFeature objects to be added to the layer
+        ret: tuple (exitFlag: bool, nSuccess: int, nFailed: int)
+            exitFlag: True if all features in feat was added successfully. 
+            nSuccess: number of features added
+            nFailed: number of features that was not added. 
+        """
+        # filter out features that does not have same geometry type as layer. 
+        lyrGeomType = lyr.geometryType()
+        filteredFeat = [f for f in feat if f.geometry().type() == lyrGeomType]
+        if len(filteredFeat) == 0:
+            return False, 0, len(feat)
 
         pr = lyr.dataProvider()
-        pr.addFeature(feat)
+        countBefore = pr.featureCount()
+
+        res, lyrFeatures = pr.addFeatures(filteredFeat)
         lyr.updateExtents()
+
+        countAfter = pr.featureCount()
+        nSucsess = countAfter - countBefore
+        nFailed = len(lyrFeatures) - nSucsess
+
+        return res, nSucsess, nFailed
+
 
 
     def mergeLineGeoms(self, *args:QgsGeometry)-> QgsGeometry:
@@ -177,36 +239,6 @@ class Parser:
             return False
 
 
-    def createQgsLayers(self) -> dict:
-        """ creates QgsVectorLayers for each output feature and returns the in a dictionary with the layer names as keys """
-
-        lyrs = {}
-        for feature in self.CONFIG.features:
-            name = getLayerNameFromFeature(feature)
-            outGeom = self.CONFIG.configJson[feature]['outputGeom']
-            if outGeom == 'point':
-                vl = QgsVectorLayer("Point", name, "memory")
-            elif outGeom == 'line':
-                vl = QgsVectorLayer("LineString", name, "memory")
-            elif outGeom == 'polygon':
-                if feature in self.CONFIG.bufferSettings.keys():
-                    vl = QgsVectorLayer("LineString", name, "memory")
-                else:
-                    vl = QgsVectorLayer("Polygon", name, "memory")
-
-            crs = QgsCoordinateReferenceSystem("EPSG:4326")
-            vl.setCrs(crs)
-            pr = vl.dataProvider()
-            columns = [QgsField("OSM id", QVariant.Int)]
-            tags = [QgsField(tag, QVariant.String) for tag in self.CONFIG.configJson[feature]['outputTags']]
-            columns.extend(tags)
-            pr.addAttributes(columns)
-            vl.updateFields()
-
-            lyrs[feature] = vl
-
-        return lyrs
-
 
     def parse(self, res:overpy.Result) -> dict:
         """
@@ -219,15 +251,34 @@ class Parser:
             output is a dictionary of QgsVectorLayers
         """
 
-        totalToParse = len(res.nodes) + len(res.ways) + len(res.relations)
-        parsed = 0
+        nodesParsed = 0
+        waysParsed = 0
+        relsParsed = 0
+        nodeSuccess = 0
+        nodeFailed = 0
+        waySuccess = 0
+        wayFailed = 0
+        relSuccess = 0
+        relFailed = 0
+        validNodes = 0
 
-        layers = self.createQgsLayers()
+        failedLayers = []
+
+        #layers = self.createQgsLayers()
 
         print("Parsing Nodes", end="\r")
         nodeGeoms = {}
+        nodeQgsFeatures = {}
         for node in res.nodes:
             nodeGeoms[node.id] = QgsPointXY(node.lon, node.lat)
+            if node.id == 5684222890:
+                print("Found the taxi!")
+
+            try: 
+                if node.tags['natural'] != "tree":
+                    continue
+            except KeyError:
+                continue
 
             features = self.getFeatures(node) #list of features the node is part of. 
             if len(features) == 0:
@@ -236,14 +287,40 @@ class Parser:
             for feature in features:
                 if not self.isRelevant(node,self.CONFIG.configJson[feature]):
                     continue
-            
-                qPointF = self.createQgsFeature(node, feature)
-                qPointF.setGeometry(QgsGeometry.fromPointXY(nodeGeoms[node.id]))
+                
+                # print("parsing {} feature".format(feature))
 
-                self.addQgsFeature(layers[feature], qPointF)
-            
-            parsed += 1
+                qPointF = self.createQgsFeature(node, feature)
+                pointGeom = QgsGeometry.fromPointXY(nodeGeoms[node.id])
+                # pointGeom = QgsGeometry(QgsPoint(node.lon, node.lat))
+
+                qPointF.setGeometry(pointGeom)
+
+                geosValid = qPointF.geometry().isGeosValid()
+                qPointF.setGeometry(qPointF.geometry().centroid())
+
+                if feature not in nodeQgsFeatures.keys():
+                    nodeQgsFeatures[feature] = []
+                nodeQgsFeatures[feature].append(qPointF)
+
+                # success, _, _ = self.addQgsFeatures(self.qgsLyrs[feature], [qPointF])
+                # if success:
+                #     nodeSuccess += 1
+                # else:
+                #     nodeFailed += 1
+                #     failedLayers.append(feature)
+
+            nodesParsed += 1
         
+        for feature in nodeQgsFeatures.keys():
+            success, nSuccess, nFalied = self.addQgsFeatures(self.qgsLyrs[feature], nodeQgsFeatures[feature])
+            if success:
+                nodeSuccess += nSuccess
+            else:
+                nodeFailed += nFalied
+                nodeSuccess += nSuccess
+                failedLayers.append(feature)
+    
         print("Parsing Ways ", end="\r")
         wayGeoms = {}
         for way in res.ways:
@@ -271,9 +348,14 @@ class Parser:
                 else:
                         qLineF.setGeometry(line)
 
-                self.addQgsFeature(layers[feature], qLineF)
+                success = self.addQgsFeatures(self.qgsLyrs[feature], [qLineF])
+                if success:
+                    waySuccess += 1
+                else:
+                    wayFailed += 1
+                    failedLayers.append(feature)
             
-            parsed += 1
+            waysParsed += 1
 
         print("Parsing Relations", end="\r")
         iter = 0
@@ -299,8 +381,9 @@ class Parser:
                         p.append(nodeGeoms[member.ref])
                     
                     qRelF.setGeometry(QgsGeometry.fromMultiPointXY(p))
+
                     
-                    self.addQgsFeature(layers[feature], qRelF)
+                    self.addQgsFeatures(self.qgsLyrs[feature], [qRelF])
 
 
                 elif self.CONFIG.configJson[feature]['outputGeom'] == 'line':
@@ -312,7 +395,7 @@ class Parser:
                     
                     outGeom = self.mergeLineGeoms(*lines)
                     qRelF.setGeometry(outGeom)
-                    self.addQgsFeature(layers[feature], qRelF)
+                    self.addQgsFeatures(self.qgsLyrs[feature], [qRelF])
 
                 elif self.CONFIG.configJson[feature]['outputGeom'] == 'polygon':
                     soloMembers = []
@@ -347,11 +430,21 @@ class Parser:
                     outGeom = QgsGeometry.collectGeometry([holeMultiPoly,soloMultiPoly])
 
                     qRelF.setGeometry(outGeom)
-                    self.addQgsFeature(layers[feature], qRelF)
+                    success = self.addQgsFeatures(self.qgsLyrs[feature], [qRelF])
+                    if success:
+                        relSuccess += 1
+                    else:
+                        relFailed += 1
+                        failedLayers.append(feature)
             
-            parsed += 1
+            relsParsed += 1
 
-        return layers
+        print(f"Statistics Nodes:\n\tnodes parsed: {nodesParsed}\n\tsuccess: {nodeSuccess}\n\tfailed: {nodeFailed}\n\tvalid: {validNodes}")
+        print(f"Statistics Ways:\n\tways parsed: {waysParsed}\n\tsuccess: {waySuccess}\n\tfailed: {wayFailed}")
+        print(f"Statistics Relations\n\trelations parsed: {relsParsed}\n\tsuccess: {relSuccess}\n\tfailed: {relFailed}")
+        print(f"Statistics Total\n\tparsed: {nodesParsed+waysParsed+relsParsed}\n\tsuccess: {nodeSuccess+waySuccess+relSuccess}\n\tfailed: {nodeFailed+wayFailed+relFailed}")
+        print(set(failedLayers))
+        return self.qgsLyrs
 
         
     def buffer(self, layer: QgsVectorLayer, feature:str) -> QgsGeometry:
@@ -392,7 +485,7 @@ class Parser:
 
                 buffered = f.geometry().buffer(bufferVal,5)
                 f.setGeometry(buffered)
-                self.addQgsFeature(vl,f)
+                self.addQgsFeatures(vl,[f])
 
         return vl
 
