@@ -70,7 +70,9 @@ class Query:
     @classmethod
     def bboxGet(cls, bbox:QgsRectangle, printquery = False):
         queryString = '''
-        [out:json];
+        [out:json]
+        [timeout:600]
+        [maxsize:1073741824];
         nwr({});
         (._;>;);
         out;
