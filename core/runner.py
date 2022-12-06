@@ -1,7 +1,5 @@
 #%%
-import geopandas as gpd
 import os
-import sys
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning) #Suppresses future warnings
 

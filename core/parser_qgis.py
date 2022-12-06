@@ -1,5 +1,4 @@
 #%%
-import os
 from qgis.core import ( QgsVectorLayer,
                         QgsLineString,
                         QgsMultiLineString,
@@ -274,11 +273,11 @@ class Parser:
             if node.id == 5684222890:
                 print("Found the taxi!")
 
-            try: 
-                if node.tags['natural'] != "tree":
-                    continue
-            except KeyError:
-                continue
+            # try: 
+            #     if node.tags['natural'] != "tree":
+            #         continue
+            # except KeyError:
+            #     continue
 
             features = self.getFeatures(node) #list of features the node is part of. 
             if len(features) == 0:
@@ -298,28 +297,29 @@ class Parser:
 
                 geosValid = qPointF.geometry().isGeosValid()
                 qPointF.setGeometry(qPointF.geometry().centroid())
+                featureValid = qPointF.isValid()
 
-                if feature not in nodeQgsFeatures.keys():
-                    nodeQgsFeatures[feature] = []
-                nodeQgsFeatures[feature].append(qPointF)
+                # if feature not in nodeQgsFeatures.keys():
+                #     nodeQgsFeatures[feature] = []
+                # nodeQgsFeatures[feature].append(qPointF)
 
-                # success, _, _ = self.addQgsFeatures(self.qgsLyrs[feature], [qPointF])
-                # if success:
-                #     nodeSuccess += 1
-                # else:
-                #     nodeFailed += 1
-                #     failedLayers.append(feature)
+                success, _, _ = self.addQgsFeatures(self.qgsLyrs[feature], [qPointF])
+                if success:
+                    nodeSuccess += 1
+                else:
+                    nodeFailed += 1
+                    failedLayers.append(feature)
 
             nodesParsed += 1
         
-        for feature in nodeQgsFeatures.keys():
-            success, nSuccess, nFalied = self.addQgsFeatures(self.qgsLyrs[feature], nodeQgsFeatures[feature])
-            if success:
-                nodeSuccess += nSuccess
-            else:
-                nodeFailed += nFalied
-                nodeSuccess += nSuccess
-                failedLayers.append(feature)
+        # for feature in nodeQgsFeatures.keys():
+        #     success, nSuccess, nFalied = self.addQgsFeatures(self.qgsLyrs[feature], nodeQgsFeatures[feature])
+        #     if success:
+        #         nodeSuccess += nSuccess
+        #     else:
+        #         nodeFailed += nFalied
+        #         nodeSuccess += nSuccess
+        #         failedLayers.append(feature)
     
         print("Parsing Ways ", end="\r")
         wayGeoms = {}
