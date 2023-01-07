@@ -9,10 +9,6 @@ Welcome to osm_2_imm's documentation!
 **osm_2_imm** is a QGIS plugin that queries Open Street Map (OSM) data and outputs it in the
 categories provided by the `Intigrated Modification Methodology (IMM) <https://en.wikipedia.org/wiki/Integrated_modification_methodology>`_
 
-.. note::
-   
-   This project is under active development.
-
 Contents:
 
 .. toctree::
@@ -21,6 +17,9 @@ Contents:
    usage/quickstart
    usage/advanced
    description/operational principles
+   description/tag mapping
+   description/buffer settings
+
 
 Indices and tables
 ==================

@@ -7,11 +7,15 @@ from qgis.core import QgsRectangle
 
 class Query:
     API = overpy.Overpass()
-    # Takes one or more list of tags as key = [values] or as a dictionary with {key = [values]} and returns a string to be used in Overpass QL query.
-    # All tags must be of the same type specified in geom = "node", "way", "area" or "rel"
-    # returns the union of the tags as string
+
     @staticmethod
     def __unionTags(geom, tags = None, **kwargs):
+        """ 
+        Takes one or more list of tags as key = [values] or as a dictionary with {key = [values]} and returns a string to be used in Overpass QL query.
+        All tags must be of the same type specified in geom = "node", "way", "area" or "rel"
+        returns the union of the tags as string
+        """
+
         outString = '('
         if tags == None:
             for key in kwargs.keys():
@@ -25,11 +29,6 @@ class Query:
         return outString
     
     
-    # Queries specified geometry within specified bbox
-    #   geom = one of "node", "way", "area" and "rel"
-    #   tags = dictionary with key = [list of values for the key]
-    #   bbox = string of coordinates in wgs 84 "west south east north"
-    #   outputs an overpy result object
     @classmethod
     def tagGet(cls, geom:str, tags:dict, bbox:str, printquery = False) -> overpy.Result:
         """
@@ -69,6 +68,9 @@ class Query:
 
     @classmethod
     def bboxGet(cls, bbox:QgsRectangle, printquery = False):
+        """
+        testing
+        """
         queryString = '''
         [out:json];
         nwr({});
@@ -93,10 +95,12 @@ class Query:
                 time.sleep(30)
         return res
 
-    # sends back the query string without making the query
-    # useful for testing query in overpass turbo first. 
     @classmethod
     def getQueryString(self, geom, tags, bbox):
+        """ 
+        Retuerns the query string without making the query. 
+        Useful for testing query in overpass turbo first. 
+        """
         queryString = '''
         [out:json][bbox:{}];
         {};
