@@ -9,6 +9,28 @@ except ImportError:
     import static
 
 class Config:
+    """
+    Creates the config object with the following properties: 
+
+    :ivar sortedTags: dictionary that contains exactly one key for every osm key to be called and the list of osm values to that key as value
+    :vartype sortedTags: Dict
+    :ivar reversedTags: contains tags as keys and the features containing that tag as values in a list. 
+    :vartype reversedTags: Dict
+    :ivar features: Lists the different categories. 
+    :vartype features: List
+    :ivar configJson: the unedited configuration.json
+    :vartype configJson: Dict
+    :ivar polygonFeatures: the unedited polygon-features.json
+    :vartype polygonFeatures: Dict
+    :ivar bufferSettings: the unedited bufferingSettings.json
+    :vartype polygonFeatures: Dict
+    :ivar projectedCrs: epsg code for the projected reference system used
+    :vartype projectedCrs: String
+    :pram outputCrs: epsg code for the reference system used for output
+    :vartype projectedCrs: String
+    :ivar bbox_[S|M|L|XL|XXL|XL_D|L_D|M_D]: Example bounding boxes of different sizes. Milano without D, Dakar with D. 
+    :vartype bbox_[S|M|L|XL|XXL|XL_D|L_D|M_D]: QgsRectangle
+    """
     def __init__(self):
         self.sortedTags={} # dictionary that contains exactly one key for every osm key to be called and the list of osm values to that key as value
         self.reversedTags={}
