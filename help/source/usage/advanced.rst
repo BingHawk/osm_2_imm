@@ -14,6 +14,8 @@ The default tag mapping is described in :ref:`tag-mapping`.
 
 To edit the tag mapping used by OSM to IMM, you can edit the configuration file. 
 
+.. _configuration-file:
+
 Configuration file
 '''''''''''''''''''
 The configuration.json file defines which OSM tags are sorted into which IMM categories. 

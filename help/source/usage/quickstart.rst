@@ -30,6 +30,8 @@ Use
 .. note::
    It is important to be familiar with the :ref:`area size <area-size>` limitation described below. 
 
+.. _limitations:
+
 Limitations
 ===========
 
@@ -39,6 +41,16 @@ Limitations
 
 As of version 2.0, max area of study 50 km^2 due to restrictions in `overpass <https://wiki.openstreetmap.org/wiki/Overpass_API#Resource_management_options_(osm-script)>`_.
 The currently used resource management options used when querying overpass can be found under :ref:`query`.
+
+.. _progress-bar:
+**Progress bar**
+As of version 2.0, he progress bar runs in the same thread as the main program instead of using 
+`slots <https://doc.qt.io/qtforpython-5/PySide2/QtCore/Slot.html>`_ and `signals <https://doc.qt.io/qtforpython-5/PySide2/QtCore/Signal.html>`_.
+This has the following disadvantages:
+- the progress bar blocks the interface of QGIS and no other tasks can be done while it is running. 
+- the "cancel" button in the dialog only cancels the running once the current partial task is completed.
+
+
 
 **Current bugs**
 
