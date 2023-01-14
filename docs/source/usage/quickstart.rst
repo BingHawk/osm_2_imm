@@ -8,7 +8,7 @@ Instalation
 .. note::
    
    This project is under development and is only fully tested on Mac as of version 2.0. 
-   Report any issues on `GitHub <https://github.com/BingHawk/osm_2_imm/issues>`
+   Report any issues on `GitHub <https://github.com/BingHawk/osm_2_imm/issues>`_
 
 .. _mac-install:
 
