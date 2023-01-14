@@ -21,18 +21,22 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QMessageBox
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QUrl
+from qgis.PyQt.QtGui import QIcon, QDesktopServices
+from qgis.PyQt.QtWidgets import QAction, QMessageBox, QProgressDialog, QProgressBar
 
-from qgis.core import (QgsProject)
+
+from qgis.core import (QgsProject, QgsRectangle)
+
+import os.path
+import time
 
 # Initialize Qt resources from file resources.py
-from .resources import *
+from .ui.resources import *
 # Import the code for the dialog
-from .osm_2_imm_dialog import MainDialog
-import os.path
-from .runner import *
+from .ui.osm_2_imm_dialog import MainDialog
+from .core.runner import Runner
+# from utils.tools import get_setting, set_setting
 
 
 class Main:
@@ -163,7 +167,7 @@ class Main:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/osm_2_imm/icon.png'
+        icon_path = ':/plugins/osm_2_imm/ui/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'OSM to IMM'),
@@ -182,6 +186,24 @@ class Main:
                 action)
             self.iface.removeToolBarIcon(action)
 
+    def licenceDialog(self):
+        licenseMessage =  '''OpenStreetMap® is open data, licensed under the Open Data Commons Open Database License (ODbL) by the OpenStreetMap Foundation. 
+            The Foundation requires that you use the credit “© OpenStreetMap contributors” on any product using OSM data.
+            You should read https://www.openstreetmap.org/copyright'''
+
+        msgBox = QMessageBox()
+        msgBox.setText(licenseMessage)
+        readMoreBtn = msgBox.addButton(self.tr("Read more..."), QMessageBox.ActionRole)
+        acceptBtn = msgBox.addButton(self.tr("Open OSM to IMM"), QMessageBox.AcceptRole)
+        msgBox.setDefaultButton(acceptBtn)
+        msgBox.exec()
+
+        if msgBox.clickedButton() == readMoreBtn:
+            desktop_service = QDesktopServices()
+            desktop_service.openUrl(QUrl('http://www.openstreetmap.org/copyright'))
+
+        return msgBox
+
 
     def run(self):
         """Run method that performs all the real work"""
@@ -190,9 +212,13 @@ class Main:
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
+
+            self.licenceDialog()
+
             self.dlg = MainDialog()
 
         project = QgsProject.instance()
+        self.dlg.setProject(project)
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
@@ -200,27 +226,28 @@ class Main:
         # See if OK was pressed
         if result:
             if self.dlg.rb_limits.isChecked():
-                south = self.dlg.south.value()
-                west = self.dlg.west.value()
-                north = self.dlg.north.value()
-                east = self.dlg.east.value()
+                south = float(self.dlg.south.value().replace(",","."))
+                west = float(self.dlg.west.value().replace(",","."))
+                north = float(self.dlg.north.value().replace(",","."))
+                east = float(self.dlg.east.value().replace(",","."))
+                # bbox = QgsRectangle(south, west, north, east)
+                bbox = QgsRectangle(west, south, east, north)
 
-                # TODO: input validation. 
-                bbox = south + ", " + west + ", " + north + ", " + east
             elif self.dlg.rb_layer.isChecked():
                 layer = self.dlg.layer.currentLayer()
-                rectangle = layer.extent()
-
-                bbox = str(rectangle.yMinimum()) + ", " + str(rectangle.xMinimum()) + ", " + str(rectangle.yMaximum()) + ", " + str(rectangle.xMaximum())
+                bbox = layer.extent()
             else: 
                 QMessageBox.critical(self.iface.mainWindow(),
                          'OSM to IMM error',
                          "Choose a way to input bounding box\nExiting...")
                 return
+            
+            if self.dlg.save_file.checkState() != 0:
+                outLoc = self.dlg.outputLoc.filePath()
+            else:
+                outLoc = None
+            
+            runner = Runner(self.iface)
+            runner.setProject(project).setBbox(bbox).setOutLoc(outLoc).qgsMain()
 
-            outLoc = self.dlg.outputLoc.filePath()
-            main(bbox, project, outLoc)
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass
 

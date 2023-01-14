@@ -1,4 +1,8 @@
 #%%
+
+# Commented for environments without geopandas/shapely
+"""
+
 from shapely.geometry import MultiPolygon, Polygon, Point, MultiPoint, LineString, MultiLineString
 from shapely.ops import linemerge
 import geopandas as gpd
@@ -304,6 +308,6 @@ def subtract(gdf, bbox):
 
     return out
 
-
+"""
 
 # %%

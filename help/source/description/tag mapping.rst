@@ -1,7 +1,27 @@
-{
+.. _tag-mapping:
+
+Tag Mapping
+===========
+How to edit tag mapping is described in :ref:`edit-tag-map`. 
+
+The mapping was developed in collaboration with Carlo Andrea Biraghi and Lorenzo Stucchi of Politecnico di Milano.
+
+**Documentation Structure**
+
+The below code sections have a number of level one object refering to the IMM categories. 
+Then the level 2 objects **inputTags** and **outputTags** refer to which OSM objects are used as input to OSM to IMM and to which tag information
+is output into the QGIS features respectively. The inputTags object then has a preperty for each tag key containing a list of tag values 
+accepted for that key. The outputTags only have the list of tag values to be output. 
+
+All mentioned tags are whitelisted and a feature is included in a category if any tag of the feature exist in its child object. 
+
+Information about the tags themselves is found in the `OSM wiki <https://wiki.openstreetmap.org/wiki/Map_features>`_
+
+Version 2.0
+-------------------
+.. code:: javascript
+
   "networkStreet": {
-    "inputGeom": "way",
-    "outputGeom": "line",
     "inputTags": {
       "highway": [
         "motorway",
@@ -32,35 +52,22 @@
     ]
   },
   "networkBikelanes": {
-    "inputGeom": "way",
-    "outputGeom": "line",
     "inputTags": { "highway": ["cycleway"] },
     "outputTags": ["highway", "cycling_width"]
   },
   "networkBikeRacks": {
-    "inputGeom": "node",
-    "outputGeom": "point",
-    "inputTags": { "amenity": ["bicycle_parking", "bicycle_rental"] },
-    "outputTags": ["amenity", "capacity"]
+    "inputTags": { "amenety": ["bicycle_parking", "bicycle_rental"] },
+    "outputTags": ["amenety", "capacity"]
   },
   "networkParkings": {
-    "inputGeom": "node",
-    "outputGeom": "point",
-    "inputTags": {
-      "amenity": ["parking", "parking_space"],
-      "building": ["carport", "garage", "garages", "parking"]
-    },
-    "outputTags": ["amenity", "building", "parking", "fee", "capacity"]
+    "inputTags": { "amenety": ["parking", "parking_space"] },
+    "outputTags": ["amenety", "parking", "fee", "capacity"]
   },
   "networkTaxi": {
-    "inputGeom": "node",
-    "outputGeom": "point",
-    "inputTags": { "amenity": ["taxi"] },
-    "outputTags": ["amenity", "capacity"]
+    "inputTags": { "amenety": ["taxi"] },
+    "outputTags": ["amenety", "capacity"]
   },
   "networkPtLines": {
-    "inputGeom": "way",
-    "outputGeom": "line",
     "inputTags": {
       "route": [
         "light_rail",
@@ -85,8 +92,6 @@
     ]
   },
   "networkPtStops": {
-    "inputGeom": "node",
-    "outputGeom": "point",
     "inputTags": {
       "route": [
         "light_rail",
@@ -99,11 +104,11 @@
         "train",
         "trolleybus"
       ],
-      "amanity": ["car_sharing", "ferry_terminal"]
+      "amenety": ["car_sharing", "ferry_terminal"]
     },
     "outputTags": [
       "route",
-      "amanity",
+      "amenety",
       "name",
       "route_master",
       "operator",
@@ -111,8 +116,6 @@
     ]
   },
   "usesActivities": {
-    "inputGeom": "node",
-    "outputGeom": "point",
     "inputTags": {
       "office": [
         "accountant",
@@ -329,7 +332,7 @@
         "weapons",
         "yes"
       ],
-      "amanity": [
+      "amenety": [
         "bar",
         "cafe",
         "fast_food",
@@ -374,7 +377,7 @@
       "name",
       "office",
       "shop",
-      "amanity",
+      "amenety",
       "leissure",
       "website",
       "opening_hours",
@@ -383,8 +386,6 @@
     ]
   },
   "usesLanduse": {
-    "inputGeom": "way",
-    "outputGeom": "polygon",
     "inputTags": {
       "landuse": [
         "commercial",
@@ -426,10 +427,8 @@
     "outputTags": ["landuse"]
   },
   "usesServices": {
-    "inputGeom": "node",
-    "outputGeom": "point",
     "inputTags": {
-      "amanity": [
+      "amenety": [
         "collage",
         "kindergarten",
         "language_school",
@@ -490,467 +489,23 @@
         "rehabilitation",
         "vaccination_centre",
         "yes"
-      ],
-      "building": [
-        "hotel",
-        "comercial",
-        "industrial",
-        "kiosk",
-        "office",
-        "retail",
-        "supermarket",
-        "warehouse",
-        "cathedral",
-        "chapel",
-        "church",
-        "kingdom_hall",
-        "monastery",
-        "mosque",
-        "presbytary",
-        "religous",
-        "shrine",
-        "synagog",
-        "temple",
-        "civil",
-        "college",
-        "fire_station",
-        "government",
-        "hospital",
-        "kindergarten",
-        "public",
-        "scool",
-        "toilets",
-        "train_station",
-        "transportation",
-        "university",
-        "barn",
-        "conservatory",
-        "cowshed",
-        "farm_auxiliary",
-        "greenhouse",
-        "stable",
-        "sty",
-        "grandstand",
-        "pavilion",
-        "riding_hall",
-        "sports_hall",
-        "stadium",
-        "hangar",
-        "digester",
-        "service",
-        "transformer_tower",
-        "water_tower",
-        "castle",
-        "military"
       ]
     },
     "outputTags": [
-      "amanity",
+      "amenety",
       "opening_hours",
       "name",
       "healthcare",
-      "building",
       "operator"
     ]
   },
-  "usesServicesActivities": {
-    "inputGeom": "node",
-    "outputGeom": "point",
-    "inputTags": {
-      "amanity": [
-        "collage",
-        "kindergarten",
-        "language_school",
-        "library",
-        "school",
-        "university",
-        "bicycle_repair_station",
-        "ferry_terminal",
-        "fuel",
-        "atm",
-        "bank",
-        "bureau_de_change",
-        "clinic",
-        "dentist",
-        "doctors",
-        "hospital",
-        "nursing_home",
-        "farmacy",
-        "social_facility",
-        "vertrinary",
-        "community_centre",
-        "social_centre",
-        "courthouse",
-        "fire_station",
-        "police",
-        "post_box",
-        "post_depot",
-        "post_office",
-        "prison",
-        "townhall",
-        "sanitary_dump_station",
-        "recycling",
-        "waste_basket",
-        "waste_disposal",
-        "waste_transfer_station",
-        "animal_boarding",
-        "childcare",
-        "refugee_site",
-        "charging_station",
-        "bar",
-        "cafe",
-        "fast_food",
-        "food_court",
-        "ice_cream",
-        "pub",
-        "restaurant",
-        "arts_centre",
-        "brothel",
-        "casino",
-        "cinema",
-        "conference_centre",
-        "events_venue",
-        "gambling",
-        "night_club",
-        "planetarium",
-        "stripclub",
-        "studio",
-        "swingerclub",
-        "theatre",
-        "dive_centre",
-        "grave_yard",
-        "internet_cafe",
-        "kitchen",
-        "marketplace",
-        "monastery",
-        "place_of_mourning",
-        "place_of_worship",
-        "public_bath"
-      ],
-      "healthcare": [
-        "alternative",
-        "birthing_centre",
-        "blood_bank",
-        "blood_donation",
-        "centre",
-        "clinic",
-        "dentist",
-        "dialysis",
-        "doctor",
-        "hispice",
-        "hospital",
-        "laboratory",
-        "midwife",
-        "nurse",
-        "physiotherapist",
-        "psychotherapist",
-        "rehabilitation",
-        "vaccination_centre",
-        "yes"
-      ],
-      "building": [
-        "hotel",
-        "comercial",
-        "industrial",
-        "kiosk",
-        "office",
-        "retail",
-        "supermarket",
-        "warehouse",
-        "cathedral",
-        "chapel",
-        "church",
-        "kingdom_hall",
-        "monastery",
-        "mosque",
-        "presbytary",
-        "religous",
-        "shrine",
-        "synagog",
-        "temple",
-        "civil",
-        "college",
-        "fire_station",
-        "government",
-        "hospital",
-        "kindergarten",
-        "public",
-        "scool",
-        "toilets",
-        "train_station",
-        "transportation",
-        "university",
-        "barn",
-        "conservatory",
-        "cowshed",
-        "farm_auxiliary",
-        "greenhouse",
-        "stable",
-        "sty",
-        "grandstand",
-        "pavilion",
-        "riding_hall",
-        "sports_hall",
-        "stadium",
-        "hangar",
-        "digester",
-        "service",
-        "transformer_tower",
-        "water_tower",
-        "castle",
-        "military"
-      ],
-      "office": [
-        "accountant",
-        "advertising_agency",
-        "architect",
-        "association",
-        "chamber",
-        "charity",
-        "company",
-        "consulting",
-        "courier",
-        "coworking",
-        "diplomatic",
-        "educational_institution",
-        "employment_agency",
-        "energy_supplier",
-        "engineer",
-        "estate_agency",
-        "financial",
-        "financial_advisor",
-        "forestry",
-        "foundation",
-        "geodesist",
-        "government",
-        "graphic_design",
-        "guide",
-        "harbour_master",
-        "insurance",
-        "it",
-        "lawyer",
-        "logistics",
-        "moving_company",
-        "newspaper",
-        "ngo",
-        "notary",
-        "political_party",
-        "property_manager",
-        "quango",
-        "religion",
-        "research",
-        "security",
-        "surveyor",
-        "tax_advisor",
-        "telecommunication",
-        "travel_agent",
-        "union",
-        "visa",
-        "water_utility",
-        "yes"
-      ],
-      "shop": [
-        "Alcohol",
-        "Bakery",
-        "Beverages",
-        "Brewing supplies",
-        "Butcher ",
-        "Cheese",
-        "Choclate",
-        "Coffee",
-        "confectionery",
-        "Convenience",
-        "deli",
-        "Dairy",
-        "Farm",
-        "Frozen_food",
-        "Greengrocier",
-        "Health_food",
-        "ice_cream",
-        "pasta",
-        "pastry",
-        "seafood",
-        "spices",
-        "tea",
-        "wine",
-        "water",
-        "department_store",
-        "general",
-        "kiosk",
-        "mall",
-        "supermarket",
-        "wholesale",
-        "baby_goods",
-        "bag",
-        "boutique",
-        "clothes",
-        "fabric",
-        "fashion_accessories",
-        "jewelry",
-        "leather",
-        "sewing ",
-        "shoes",
-        "tailor",
-        "watches",
-        "wool",
-        "charity",
-        "second hand",
-        "variety_store",
-        "beauty",
-        "chemist",
-        "cosmetics",
-        "erotic",
-        "hairdresser",
-        "hairdresser_supply",
-        "hearing_aids",
-        "herbalist",
-        "massage",
-        "medical_supplies",
-        "nutrition_supplements",
-        "optician ",
-        "perfumery",
-        "tattoo",
-        "agrarian ",
-        "appliance",
-        "bathroom_furnishing",
-        "doityourself",
-        "electrical",
-        "energy",
-        "fireplace",
-        "florist",
-        "garden_centre",
-        "garden_furniture",
-        "gas",
-        "glaziery",
-        "groundskeeping",
-        "hardware",
-        "houseware",
-        "locksmith",
-        "paint",
-        "security",
-        "trade",
-        "antiques",
-        "bed",
-        "candles",
-        "carpet",
-        "curtain ",
-        "doors",
-        "flooring",
-        "furniture",
-        "houshold_linnen",
-        "interior_decoration",
-        "kitchen",
-        "lighting",
-        "tiles",
-        "window_blind",
-        "computer",
-        "electronics",
-        "hifi",
-        "mobilde_phone",
-        "radiotechnics",
-        "vacuum_cleaner",
-        "atv",
-        "bicycle",
-        "boat",
-        "car",
-        "car_repair",
-        "car_parts",
-        "caravan",
-        "fuel",
-        "fishing",
-        "golf",
-        "hunting",
-        "jetski",
-        "military_surplus",
-        "motorcycle",
-        "outdoor",
-        "scuba_diving",
-        "ski",
-        "snowmobile",
-        "sports",
-        "swimming_pool",
-        "trailer",
-        "tyres",
-        "art",
-        "camera",
-        "collector",
-        "craft",
-        "frame",
-        "games",
-        "model",
-        "music",
-        "musical_instrument",
-        "photo",
-        "trophy",
-        "video",
-        "video_games",
-        "anime",
-        "books",
-        "gift",
-        "lottery",
-        "newsagent",
-        "stationary",
-        "ticket",
-        "bookmaker",
-        "cannabis",
-        "copyshop",
-        "dry_cleaning",
-        "e-cigarette",
-        "funeral_directors",
-        "laundry",
-        "money_lender",
-        "outpost",
-        "party",
-        "pawnbroker",
-        "pest_control",
-        "pet",
-        "pet_grooming",
-        "pyrotechnics",
-        "religion",
-        "storage_rental",
-        "tobacco",
-        "toys",
-        "travel_agency",
-        "vacant",
-        "weapons",
-        "yes"
-      ],
-      "leissure": [
-        "adult_gaming_centre",
-        "dance",
-        "escape_game",
-        "fittness_centre",
-        "sports_centrum",
-        "stadium",
-        "swimming_pool"
-      ]
-    },
-    "outputTags": [
-      "amanity",
-      "healthcare",
-      "building",
-      "office",
-      "shop",
-      "amanity",
-      "leissure",
-      "name",
-      "operator",
-      "opening_hours",
-      "brand",
-      "website"
-    ]
-  },
   "boundariesAdministrative": {
-    "inputGeom": "way",
-    "outputGeom": "polygon",
     "inputTags": {
       "boundary": ["administrative"]
     },
     "outputTags": ["boundary", "admin_level", "population"]
   },
   "voidAreasOpenAir": {
-    "inputGeom": "way",
-    "outputGeom": "polygon",
     "inputTags": {
       "leissure": [
         "disc_golf_course",
@@ -969,9 +524,28 @@
     },
     "outputTags": ["leissure", "sport", "tourism", "access"]
   },
+  "voidBlocks": {
+    "inputTags": {
+      "highway": [
+        "motorway",
+        "trunk",
+        "primary",
+        "secondary",
+        "tertiary",
+        "unclassified",
+        "residential",
+        "motorway_link",
+        "trunk_link",
+        "primary_link",
+        "secondary_link",
+        "tertiary_link",
+        "living_street",
+        "road"
+      ]
+    },
+    "outputTags": ["highway"]
+  },
   "voidBlueAreas": {
-    "inputGeom": "way",
-    "outputGeom": "polygon",
     "inputTags": {
       "leissure": ["marina", "swimming_area", "swimming_pool", "water_park"],
       "natural": ["water"],
@@ -989,8 +563,6 @@
     "outputTags": ["leissure", "natural", "waterway"]
   },
   "voidGreenAreas": {
-    "inputGeom": "way",
-    "outputGeom": "polygon",
     "inputTags": {
       "landuse": [
         "allotments",
@@ -1034,8 +606,6 @@
     ]
   },
   "voidGreyAreas": {
-    "inputGeom": "way",
-    "outputGeom": "polygon",
     "inputTags": {
       "highway": [
         "motorway",
@@ -1066,8 +636,6 @@
     "outputTags": ["width", "highway", "surface"]
   },
   "voidTrees": {
-    "inputGeom": "node",
-    "outputGeom": "point",
     "inputTags": { "natural": ["tree", "tree_row"] },
     "outputTags": [
       "natural",
@@ -1080,8 +648,6 @@
     ]
   },
   "volumeBuildings": {
-    "inputGeom": "way",
-    "outputGeom": "polygon",
     "inputTags": {
       "building": [
         "appartments",
@@ -1156,20 +722,5 @@
       "building:height",
       "building:use"
     ]
-  },
-  "bbox": {
-    "bbox_xxlarge": "45.2, 9, 45.7, 9.5",
-    "bbox_xlarge": "45.43, 9.14, 45.53, 9.24",
-    "bbox_large": "45.45, 9.2, 45.5, 9.25",
-    "bbox_std": "45.474, 9.222, 45.482, 9.232",
-    "bbox_small": "45.47692, 9.22551, 45.47945, 9.23028",
-    "bbox_xsmall": "45.47892, 9.22551, 45.47945, 9.22628",
-    "bbox_xlarge_dakar": "14.60, -17.51, 14.9, -17.14",
-    "bbox_large_dakar": "14.7, -17.46, 14.75, -17.41",
-    "bbox_std_dakar": "14.72, -17.441, 14.73, -17.431"
-  },
-  "crs": {
-    "projected": "EPSG:3857",
-    "output": "EPSG:4326"
-  }
-}
+    }
+
