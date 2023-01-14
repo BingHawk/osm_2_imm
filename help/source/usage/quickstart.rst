@@ -43,7 +43,9 @@ As of version 2.0, max area of study 50 km^2 due to restrictions in `overpass <h
 The currently used resource management options used when querying overpass can be found under :ref:`query`.
 
 .. _progress-bar:
+
 **Progress bar**
+
 As of version 2.0, he progress bar runs in the same thread as the main program instead of using 
 `slots <https://doc.qt.io/qtforpython-5/PySide2/QtCore/Slot.html>`_ and `signals <https://doc.qt.io/qtforpython-5/PySide2/QtCore/Signal.html>`_.
 This has the following disadvantages:

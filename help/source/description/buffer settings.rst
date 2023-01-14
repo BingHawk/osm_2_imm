@@ -14,6 +14,7 @@ Information about the tags themselves is found in the `OSM wiki <https://wiki.op
 Version 2.0
 -------------------
 .. code:: javascript
+    
     {
     "voidGreyAreas": 
         {
