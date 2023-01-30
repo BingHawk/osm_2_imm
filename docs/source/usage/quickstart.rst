@@ -40,7 +40,7 @@ On mac? see :ref:`mac-install`
 To start using the tool, go to `osm_2_imm github page <https://github.com/BingHawk/osm_2_imm>`_ and download a osm to imm as .zip file.
 Then unpac the .zip the plugin folder of your QGIS installation:
 
-C:\Users\USER\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins
+``C:\Users\USER\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins``
 
 next, install the required dependency **overpy**:
 
