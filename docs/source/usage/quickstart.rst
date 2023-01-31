@@ -18,7 +18,8 @@ Mac installation
 On windows? see :ref:`windows-install`
 
 To start using the tool, go to `osm_2_imm github page <https://github.com/BingHawk/osm_2_imm>`_ and download a osm to imm as .zip file.
-Then unpac the .zip the plugin folder of your QGIS installation:
+Then unpack the .zip to a folder called ``osm_2_imm`` in the plugin folder of your QGIS installation.
+This folder is usually located under application support: 
 
 ~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins
 
@@ -37,19 +38,27 @@ Windows installation
 
 On mac? see :ref:`mac-install`
 
-To start using the tool, go to `osm_2_imm github page <https://github.com/BingHawk/osm_2_imm>`_ and download a osm to imm as .zip file.
-Then unpac the .zip the plugin folder of your QGIS installation:
+First of all, make sure you have installed a QGIS distribution through OSGeo4W. Instructions can be found `here <https://qgis.org/en/site/forusers/alldownloads.html#osgeo4w-installer>`_
 
-``C:\Users\USER\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins``
+To start using the tool, go to `osm_2_imm github page <https://github.com/BingHawk/osm_2_imm>`_ and download a osm to imm as .zip file.
+Then unpack the .zip to a folder called ``osm_2_imm`` in the plugin folder of your QGIS installation.
+
+``C:\OSGeo4W\apps\qgis-ltr\python\plugins``
+
+.. note:: 
+   Note that your QGIS instalation might not be called qgis-ltr. Make sure also to find the "plugins"
+   folder inside the "python" folder. 
 
 next, install the required dependency **overpy**:
 
 #. Open OSGeo4W shell (packed with QGIS in the start menu)
-#. Type py3_env. This should print paths of your QGIS Python installation.
-#. Use Python's pip to install overpy: ``python -m pip install overpy``
+#. Use Python's pip to install overpy: ``pip install overpy``
+
+Restart QGIS. If OSM to IMM does not appear under "plugin", you should find it under installed plugins 
+in the plugin manager. Check the box next to "OSM to IMM"
 
 .. note::
-   OSM to IMM is not yet tested on windows and might not work as expected. Above instructions credited to `Zoran <https://landscapearchaeology.org/2018/installing-python-packages-in-qgis-3-for-windows/>`_
+   OSM to IMM is not yet tested on windows and might not work as expected.
 
 Use
 ---
